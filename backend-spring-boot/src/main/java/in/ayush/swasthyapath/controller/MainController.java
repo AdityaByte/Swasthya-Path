@@ -2,14 +2,10 @@ package in.ayush.swasthyapath.controller;
 
 import in.ayush.swasthyapath.dto.PatientInformation;
 import in.ayush.swasthyapath.dto.ResponseData;
-import in.ayush.swasthyapath.model.FoodData;
 import in.ayush.swasthyapath.service.PatientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -21,7 +17,7 @@ public class MainController {
     @PostMapping("/patient")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public Map<String, List<FoodData>> getPatientInformation(@RequestBody PatientInformation patientInformation) {
+    public String getPatientInformation(@RequestBody PatientInformation patientInformation) {
         return patientService.prepareDiet(patientInformation);
     }
 

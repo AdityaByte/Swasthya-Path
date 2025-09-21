@@ -3,10 +3,8 @@ package in.ayush.swasthyapath.service;
 import in.ayush.swasthyapath.dto.PatientInformation;
 import in.ayush.swasthyapath.dto.ResponseData;
 import in.ayush.swasthyapath.enums.Dosha;
-import in.ayush.swasthyapath.model.FoodData;
 import in.ayush.swasthyapath.pojo.DoshaPercent;
-import in.ayush.swasthyapath.repository.DietRepository;
-import in.ayush.swasthyapath.utils.Utility;
+import in.ayush.swasthyapath.utils.PromptCreater;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,9 +14,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class PatientService {
 
-    private final DietRepository repository;
-    private final Utility utility;
-    private final MealPlanner mealPlanner;
+    private final GeminiService geminiService;
 
     private static final Map<Dosha, DoshaPercent> DOSHA_MAP = Map.of(
             Dosha.VATA, new DoshaPercent(0.525, 0.225, 0.25),
@@ -27,69 +23,13 @@ public class PatientService {
     );
 
 
-    public Map<String, List<FoodData>> prepareDiet(PatientInformation patientInformation) {
+    public String prepareDiet(PatientInformation patientInformation) {
         double patientBMR = calculateBMR(patientInformation);
         Map<String, Double> macroNutrient = getMacroNutrient(patientInformation.getPrakriti(), patientBMR);
-        // Now we have to fetch the meal based on the user preferences.
-        List<FoodData> foodDataList = repository
-                .fetchMeal(
-                        macroNutrient,
-                        patientInformation.getMealFrequency(),
-                        patientInformation.getPreferredFoodGenre(),
-                        patientInformation.getAllergies());
 
-        Map<String, List<FoodData>> result = new HashMap<>();
-
-        if (!foodDataList.isEmpty()) {
-            // We do have to prepare the meal so that the calories intake of the day must be fulfilled.]
-
-            List<FoodData> tempFoodDataListBreakFast = new ArrayList<>();
-            List<FoodData> tempFoodDataListLunch = new ArrayList<>();
-            List<FoodData> tempFoodDataListDinner = new ArrayList<>();
-
-            for (FoodData foodData : foodDataList) {
-
-                if (foodData.getMealType().contains("Breakfast")) {
-                    tempFoodDataListBreakFast.add(foodData);
-                } else if (foodData.getMealType().contains("Lunch")) {
-                    tempFoodDataListLunch.add(foodData);
-                } else if (foodData.getMealType().contains("Dinner")) {
-                    tempFoodDataListDinner.add(foodData);
-                } else {
-                    System.out.println("I haven't know the food-data meal type " + foodData.getMealType());
-                }
-            }
-
-            // OK.
-
-            Map<String, double[]> distribution = utility.distinguishNutrientMealCapacity(macroNutrient, patientInformation.getMealFrequency());
-
-
-            mealPlanner.setTarget(distribution, "Breakfast");
-            List<FoodData> findPairBreakfast = mealPlanner.findPair(tempFoodDataListBreakFast);
-            if (findPairBreakfast.isEmpty()) {
-                result.put("Breakfast", mealPlanner.findCombination(tempFoodDataListBreakFast));
-            } else {
-                result.put("Breakfast", findPairBreakfast);
-            }
-
-            mealPlanner.setTarget(distribution, "Lunch");
-            List<FoodData> findPairLunch = mealPlanner.findPair(tempFoodDataListLunch);
-            if (findPairLunch.isEmpty()) {
-                result.put("Lunch", mealPlanner.findCombination(tempFoodDataListLunch));
-            } else {
-                result.put("Lunch", findPairLunch);
-            }
-
-            mealPlanner.setTarget(distribution, "Dinner");
-            List<FoodData> findPairDinner = mealPlanner.findPair(tempFoodDataListDinner);
-            if (findPairDinner.isEmpty()) {
-                result.put("Dinner", mealPlanner.findCombination(tempFoodDataListDinner));
-            } else {
-                result.put("Dinner", findPairDinner);
-            }
-        }
-        return result;
+        // Now we are calling the gemini service.
+        String prompt = PromptCreater.createPrompt(patientInformation, macroNutrient);
+        return geminiService.generateDiet(prompt);
     }
 
     public ResponseData getInformation(PatientInformation patientInformation) {

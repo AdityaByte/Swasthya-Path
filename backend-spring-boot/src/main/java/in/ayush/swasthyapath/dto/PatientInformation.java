@@ -24,7 +24,8 @@ public class PatientInformation {
     // More likely if the patient allergic to some food we won't prescribe it.
     private List<String> allergies;
     private byte mealFrequency; // 2/3/4 times a day.
-    private SleepPattern sleepPattern;
+    private String sleepingSchedule; // Early sleep, late sleep.
+    private float hoursOfSleep;
     private byte waterIntake; // Water Intake how many times a day.
     private String preferredFoodGenre; // Veg / Non-Veg
 
@@ -35,11 +36,3 @@ public class PatientInformation {
     private List<Taste> preferredTastes;
 }
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-class SleepPattern {
-    private String sleepingSchedule; // Early sleep, late sleep.
-    private float hoursOfSleep;
-}
