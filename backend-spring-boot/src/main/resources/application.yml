@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: SwasthyaPath
+  data:
+    mongodb:
+      uri: ${MONGO_URI}
+
+server:
+  port: 8080
