@@ -1,13 +1,20 @@
 package in.ayush.swasthyapath.utils;
 
+import in.ayush.swasthyapath.dto.BasicInformation;
+import in.ayush.swasthyapath.dto.HealthInformation;
 import in.ayush.swasthyapath.dto.PatientInformation;
+import in.ayush.swasthyapath.enums.Dosha;
 
 import java.util.List;
 import java.util.Map;
 
 public class PromptCreater {
 
-    public static String createPrompt(PatientInformation patientInformation, Map<String, Double> macroNutrient) {
+    public static String createPrompt(PatientInformation patientInformation, Map<String, Double> macroNutrient, Dosha prakruti, Dosha vikruti) {
+
+        BasicInformation basicInformation = patientInformation.getBasicInfo();
+        HealthInformation healthInformation = patientInformation.getHealthInfo();
+
         return """
                 You are an expert Ayurvedic diet planner. Based on the following patient details, generate a personalized daily diet plan.
 
@@ -22,7 +29,7 @@ public class PromptCreater {
                 - Allergies: %s
                 - Meal frequency: %d times/day
                 - Sleep pattern: %s, %.1f hrs
-                - Water intake: %d times/day
+                - Water intake: %f times/day
                 - Preferred food genre: %s
                 - Prakriti (constitution): %s
                 - Vikruti (imbalance): %s
@@ -46,23 +53,23 @@ public class PromptCreater {
                   "guidelines": ["..."]
                 }
                 """.formatted(
-                patientInformation.getName(),
-                patientInformation.getAge(),
-                patientInformation.getGender(),
-                patientInformation.getHeight(),
-                patientInformation.getWeight(),
-                patientInformation.getActivityLevel(),
-                listToString(patientInformation.getHealthIssue()),
-                listToString(patientInformation.getAllergies()),
-                patientInformation.getMealFrequency(),
-                patientInformation.getSleepingSchedule(),
-                patientInformation.getHoursOfSleep(),
-                patientInformation.getWaterIntake(),
-                patientInformation.getPreferredFoodGenre(),
-                patientInformation.getPrakriti(),
-                patientInformation.getVikruti(),
-                patientInformation.getDigestionStrength(),
-                listToString(patientInformation.getPreferredTastes()),
+                basicInformation.getName(),
+                basicInformation.getAge(),
+                basicInformation.getGender(),
+                basicInformation.getHeight(),
+                basicInformation.getWeight(),
+                basicInformation.getActivityLevel(),
+                listToString(healthInformation.getHealthIssues()),
+                listToString(healthInformation.getAllergies()),
+                basicInformation.getMealFrequency(),
+                basicInformation.getSleepingSchedule(),
+                basicInformation.getHoursOfSleep(),
+                basicInformation.getWaterIntake(),
+                basicInformation.getPreferredFoodGenre(),
+                prakruti,
+                vikruti,
+                patientInformation.getPrakrutiAssessment().getDigestionStrength(),
+                listToString(healthInformation.getPreferredTastes()),
                 macroMapToString(macroNutrient)
         );
     }
