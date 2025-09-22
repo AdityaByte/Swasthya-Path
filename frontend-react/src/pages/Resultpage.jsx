@@ -42,7 +42,7 @@ const ResultPage = () => {
                     href={`${backendURL + data.pdfURL}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full font-semibold shadow-lg transition duration-300"
+                    className="inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full font-semibold shadow-lg transition duration-300 cursor-pointer"
                 >
                     Download PDF
                 </a>

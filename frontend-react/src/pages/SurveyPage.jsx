@@ -148,7 +148,7 @@ const SurveyPage = () => {
           </div>
 
           <div className="text-center">
-            <button type="submit" className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full font-semibold shadow-lg transition duration-300">
+            <button type="submit" className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full font-semibold shadow-lg transition duration-300 cursor-pointer hover:scale-105 active:scale:95">
               Submit Survey
             </button>
           </div>

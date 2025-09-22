@@ -16,43 +16,45 @@ public class PromptCreater {
         HealthInformation healthInformation = patientInformation.getHealthInfo();
 
         return """
-                You are an expert Ayurvedic diet planner. Based on the following patient details, generate a personalized daily diet plan.
+        You are an expert Ayurvedic diet planner. Based on the following patient details, generate a personalized daily diet plan.
 
-                Patient Information:
-                - Name: %s
-                - Age: %d
-                - Gender: %s
-                - Height: %.1f cm
-                - Weight: %.1f kg
-                - Activity level: %s
-                - Health issues: %s
-                - Allergies: %s
-                - Meal frequency: %d times/day
-                - Sleep pattern: %s, %.1f hrs
-                - Water intake: %f times/day
-                - Preferred food genre: %s
-                - Prakriti (constitution): %s
-                - Vikruti (imbalance): %s
-                - Digestion strength: %s
-                - Preferred tastes: %s
-                - Macro Nutrient Requirement: %s
+        Patient Information:
+        - Name: %s
+        - Age: %d
+        - Gender: %s
+        - Height: %.1f cm
+        - Weight: %.1f kg
+        - Activity level: %s
+        - Health issues: %s
+        - Allergies: %s
+        - Meal frequency: %d times/day
+        - Sleep pattern: %s, %.1f hrs
+        - Water intake: %f times/day
+        - Preferred food genre: %s
+        - Prakriti (constitution): %s
+        - Vikruti (imbalance): %s
+        - Digestion strength: %s
+        - Preferred tastes: %s
+        - Macro Nutrient Requirement: %s
 
-                Instructions:
-                1. Use Ayurvedic principles of prakriti, vikruti, dosha, and guna balancing.
-                2. Exclude food items that conflict with allergies or preferred food genre.
-                3. Suggest meals according to mealFrequency (breakfast, lunch, dinner, snacks if applicable).
-                4. Keep meals simple, practical, and aligned with Indian dietary context.
-                5. Provide structured output in JSON format:
-                {
-                  "dayPlan": {
-                    "breakfast": "...",
-                    "lunch": "...",
-                    "dinner": "...",
-                    "snacks": "..."
-                  },
-                  "guidelines": ["..."]
-                }
-                """.formatted(
+        Instructions:
+        1. Use Ayurvedic principles of prakriti, vikruti, dosha, and guna balancing.
+        2. Exclude food items that conflict with allergies or preferred food genre.
+        3. Suggest meals according to mealFrequency (breakfast, lunch, dinner, snacks if applicable).
+        4. Keep meals simple, practical, and aligned with Indian dietary context.
+        5. Output MUST be strictly in JSON format, without any extra text.
+        6. The JSON should contain ONLY these fields:
+        {
+          "dayPlan": {
+            "breakfast": "...",
+            "lunch": "...",
+            "dinner": "...",
+            "snacks": "..."
+          },
+          "guidelines": ["..."]
+        }
+        7. Do NOT add extra fields, comments, explanations, or notes outside this JSON.
+        """.formatted(
                 basicInformation.getName(),
                 basicInformation.getAge(),
                 basicInformation.getGender(),

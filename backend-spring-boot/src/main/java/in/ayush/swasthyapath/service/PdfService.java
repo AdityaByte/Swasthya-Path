@@ -34,7 +34,7 @@ public class PdfService {
 
         // Defining the fonts.
         Font titleFont = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD, BaseColor.BLUE);
-        Font sectionFont = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD);
+        Font sectionFont = new Font(Font.FontFamily.HELVETICA, 13, Font.UNDERLINE, BaseColor.GREEN);
         Font normalFont = new Font(Font.FontFamily.TIMES_ROMAN, 12, Font.NORMAL);
         Font boldFont = new Font(Font.FontFamily.TIMES_ROMAN, 12, Font.BOLD);
 
@@ -64,26 +64,32 @@ public class PdfService {
 
         document.add(table);
         document.add(new Paragraph("\n"));
-        // Adding content
 
+        // Main content
         Paragraph healthTitle = new Paragraph("Health Plan", titleFont);
         healthTitle.setAlignment(Element.ALIGN_CENTER);
         document.add(healthTitle);
+        document.add(new Paragraph("\n"));
 
-        document.add(new Paragraph("Breakfast: " + healthResponse.getDayPlan().getBreakfast(), sectionFont));
-        document.add(new Paragraph("Lunch: " + healthResponse.getDayPlan().getLunch(), sectionFont));
-        document.add(new Paragraph("Dinner: " + healthResponse.getDayPlan().getDinner(), sectionFont));
-        document.add(new Paragraph("Snacks: " + healthResponse.getDayPlan().getSnacks(), sectionFont));
 
-        document.add(new Paragraph("\nGuidelines:"));
+        document.add(new Paragraph("Breakfast: ", sectionFont));
+        document.add(new Paragraph(healthResponse.getDayPlan().getBreakfast(), normalFont));
+        document.add(new Paragraph("Lunch: ", sectionFont));
+        document.add(new Paragraph(healthResponse.getDayPlan().getLunch(), normalFont));
+        document.add(new Paragraph("Dinner: ", sectionFont));
+        document.add(new Paragraph(healthResponse.getDayPlan().getDinner(), normalFont));
+        document.add(new Paragraph("Snacks: ", sectionFont));
+        document.add(new Paragraph(healthResponse.getDayPlan().getSnacks(), normalFont));
+        document.add(new Paragraph("\n"));
+
+
+        document.add(new Paragraph("Guidelines:", titleFont));
         for (String guideline : healthResponse.getGuidelines()) {
-            document.add(new Paragraph("- " + guideline));
+            document.add(new Paragraph("- " + guideline, normalFont));
         }
 
-        // Close document
         document.close();
 
-        // Return URL
         return "/pdfs/" + fileName + ".pdf";
     }
 
