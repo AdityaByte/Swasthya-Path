@@ -21,7 +21,7 @@ function HomePage() {
                 <Link to="/survey" className="bg-[var(--color-primary)] text-white lg:w-1/2 py-3 rounded-full transform transition duration-300 hover:scale-105 active:scale-95 cursor-pointer inline-block text-center">
                     Prepare Diet
                 </Link>
- 
+
             </div>
         </div>
     )
