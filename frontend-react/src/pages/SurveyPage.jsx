@@ -50,8 +50,10 @@ const SurveyPage = () => {
     }));
   };
 
+  const [loader,setloader] = useState(false)
   const handleSubmit = (e) => {
     e.preventDefault();
+    setloader(true)
 
     const payload = {
       basicInfo: {
@@ -86,6 +88,7 @@ const SurveyPage = () => {
           return;
         }
         const data = await response.json();
+        setloader(false)
         navigate("/result", { state: data });
       })
       .catch(error => {
@@ -149,7 +152,7 @@ const SurveyPage = () => {
 
           <div className="text-center">
             <button type="submit" className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full font-semibold shadow-lg transition duration-300 cursor-pointer hover:scale-105 active:scale:95">
-              Submit Survey
+              {loader ? "loading..." :"Submit Survey" }
             </button>
           </div>
 
