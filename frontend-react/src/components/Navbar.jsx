@@ -3,6 +3,8 @@ import logo from "../assets/images/logo.png";
 import LoginButton from "./LoginButton";
 import SignupButton from "./SignupButton";
 import { HiOutlineMenu, HiOutlineX } from "react-icons/hi";
+import { Link } from "react-router-dom";
+import LoginPage from "../pages/LoginPage";
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -33,8 +35,12 @@ const Navbar = () => {
             </ul>
 
             <div className="hidden md:flex items-center gap-4">
-                <LoginButton />
-                <SignupButton />
+                <Link to={"/login"}>
+                    <LoginButton />
+                </Link>
+                <Link to={"/signup/"}>
+                    <SignupButton />
+                </Link>
             </div>
 
             <div className="md:hidden flex items-center">
@@ -46,25 +52,27 @@ const Navbar = () => {
                 </button>
             </div>
 
-            {isOpen && (
-                <div className="absolute top-0 left-0 w-full h-[100vh] bg-white shadow-lg rounded-b-2xl md:hidden z-40">
-                    <button onClick={() => setIsOpen(false)} className="text-gray-700 absolute top-2 right-3" >
-                        <HiOutlineX size={28} />
-                    </button>
-                    <ul className="flex flex-col items-center gap-6 py-6 text-gray-700 font-medium">
-                        {menuItems.map((item) => (
-                            <li key={item} className="hover:text-green-600 transition cursor-pointer">
-                                {item}
-                            </li>
-                        ))}
-                        <div className="flex gap-4 mt-4">
-                            <LoginButton />
-                            <SignupButton />
-                        </div>
-                    </ul>
-                </div>
-            )}
-        </nav>
+            {
+                isOpen && (
+                    <div className="absolute top-0 left-0 w-full h-[100vh] bg-white shadow-lg rounded-b-2xl md:hidden z-40">
+                        <button onClick={() => setIsOpen(false)} className="text-gray-700 absolute top-2 right-3" >
+                            <HiOutlineX size={28} />
+                        </button>
+                        <ul className="flex flex-col items-center gap-6 py-6 text-gray-700 font-medium">
+                            {menuItems.map((item) => (
+                                <li key={item} className="hover:text-green-600 transition cursor-pointer">
+                                    {item}
+                                </li>
+                            ))}
+                            <div className="flex gap-4 mt-4">
+                                <LoginButton />
+                                <SignupButton />
+                            </div>
+                        </ul>
+                    </div>
+                )
+            }
+        </nav >
     );
 };
 

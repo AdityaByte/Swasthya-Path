@@ -33,7 +33,7 @@ const Feature = () => {
 
   return (
     <section className="py-20 bg-gray-50 px-6 md:px-20 text-center">
-      <h2 className="text-4xl font-bold mb-12">What Swasthya Path Does</h2>
+      <h2 className="text-4xl font-bold mb-12">What Swasthya Path Does <span className="text-green-800">?</span></h2>
       <div className="flex flex-col md:flex-row gap-10 justify-center flex-wrap">
         {features.map((item, idx) => (
           <div

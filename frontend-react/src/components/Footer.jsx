@@ -15,7 +15,7 @@ const Footer = () => {
         </div>
 
         {/* Links */}
-        <div className="flex gap-6 text-gray-300">
+        <div className="hidden md:flex gap-6 text-gray-300">
           {["Home", "Diet Planner", "Wellness", "Remedies", "About"].map((link) => (
             <a key={link} href={`#${link.toLowerCase()}`} className="hover:text-white transition">
               {link}

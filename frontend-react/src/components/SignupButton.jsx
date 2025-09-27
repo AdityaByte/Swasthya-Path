@@ -13,6 +13,7 @@ const SignupButton = () => {
         hover:from-orange-500 hover:to-orange-600
         transition-all duration-300 ease-in-out
         shadow-sm hover:shadow-md
+        cursor-pointer
       "
     >
       Signup

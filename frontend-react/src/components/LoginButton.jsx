@@ -14,6 +14,7 @@ const LoginButton = () => {
         hover:bg-green-600 hover:text-white
         transition-all duration-300 ease-in-out
         shadow-sm hover:shadow-md
+        cursor-pointer
       "
     >
       Login
