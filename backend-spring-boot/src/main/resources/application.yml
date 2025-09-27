@@ -1,9 +1,16 @@
 spring:
   application:
     name: SwasthyaPath
-#  data:
-#    mongodb:
-#      uri: ${MONGO_URI}
+  data:
+    mongodb:
+      uri: ${MONGO_URI}
 
 server:
   port: 8080
+
+frontend:
+  origin: http://localhost:5173
+
+jwt:
+  secret:
+    key: ${JWT_SECRET}

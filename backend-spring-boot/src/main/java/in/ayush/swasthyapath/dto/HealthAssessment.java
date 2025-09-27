@@ -11,10 +11,10 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class HealthInformation {
+public class HealthAssessment {
 
     private List<String> healthIssues;
     private List<String> allergies;
     private List<String> preferredTastes;
-
+    private List<String> guna;
 }

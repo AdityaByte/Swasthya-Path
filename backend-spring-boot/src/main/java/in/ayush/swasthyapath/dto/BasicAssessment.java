@@ -8,23 +8,17 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BasicInformation {
+public class BasicAssessment {
 
-    private String name;
-    private byte age;
-    private Gender gender;
-    private float height;
-    private float weight;
     private ActivityLevel activityLevel;
+    private float waterIntake;
     private byte mealFrequency;
     private SleepingSchedule sleepingSchedule;
     private float hoursOfSleep;
-    private float waterIntake;
     private FoodGenre preferredFoodGenre;
 }
