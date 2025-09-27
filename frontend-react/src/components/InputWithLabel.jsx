@@ -23,7 +23,7 @@ const InputWithLabel = ({ label, type, name, value, onChange, placeholderText, o
           name={name}
           value={value}
           onChange={onChange}
-          className="w-full bg-[var(--color-bg)] border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] shadow-sm"
+          className="w-full bg-[var(--color-bg)] border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] shadow-sm resize-none"
           placeholder={placeholderText}
           rows={3}
           required

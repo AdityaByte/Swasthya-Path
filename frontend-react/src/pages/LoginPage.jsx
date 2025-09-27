@@ -1,26 +1,76 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
-  const userTypes = ["Patient", "Doctor"];
+
+  const backendURL = import.meta.env.VITE_BACKEND_URL;
+  const userTypes = ["PATIENT", "DOCTOR"];
+
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    userType: "",
+    email: "",
+    password: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    fetch(`${backendURL}/auth/login`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify(formData)
+    })
+      .then(async response => {
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(response.body);
+          return;
+        }
+
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("tokenExpiry", data.expiry)
+        // Now based on the assessment I do have to forward the page.
+
+        if (!data.assessment) {
+          navigate("/assessment");
+          return;
+        }
+
+        // If assessment has been done then we have to forward the request to the dashboard.
+        navigate("/dashboard/patient")
+      })
+
+  };
 
   return (
     <div className="w-full h-[100vh] flex items-center justify-center bg-gradient-to-br from-green-50 via-white to-green-100">
       <div className="w-[90%] md:w-[400px] bg-white rounded-2xl shadow-xl p-8 flex flex-col gap-8">
         {/* Title */}
-        <h1 className="text-center text-3xl font-bold text-gray-800">
-          Login
-        </h1>
+        <h1 className="text-center text-3xl font-bold text-gray-800">Login</h1>
 
         {/* Form */}
-        <form className="flex flex-col gap-6">
+        <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
           {/* User Type */}
           <div className="flex flex-col gap-2">
-            <label htmlFor="user-type" className="font-medium text-gray-700">
+            <label htmlFor="userType" className="font-medium text-gray-700">
               User Type
             </label>
             <select
-              id="user-type"
-              name="user-type"
+              id="userType"
+              name="userType"
+              value={formData.userType}
+              onChange={handleChange}
               className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 shadow-sm"
               required
             >
@@ -33,16 +83,20 @@ const LoginPage = () => {
             </select>
           </div>
 
-          {/* Username */}
+          {/* Email */}
           <div className="flex flex-col gap-2">
-            <label htmlFor="username" className="font-medium text-gray-700">
-              Username
+            <label htmlFor="email" className="font-medium text-gray-700">
+              Email
             </label>
             <input
-              type="text"
-              id="username"
-              placeholder="John Doe"
+              type="email"
+              id="email"
+              name="email"
+              placeholder="johndoe@email.com"
+              onChange={handleChange}
+              value={formData.email}
               className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 shadow-sm"
+              required
             />
           </div>
 
@@ -54,8 +108,12 @@ const LoginPage = () => {
             <input
               type="password"
               id="password"
+              name="password"
               placeholder="••••••••"
+              onChange={handleChange}
+              value={formData.password}
               className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 shadow-sm"
+              required
             />
           </div>
 
@@ -72,7 +130,10 @@ const LoginPage = () => {
         <div className="text-sm text-gray-600 text-center">
           <p>
             Don’t have an account?{" "}
-            <a href="/signup" className="text-green-600 font-medium hover:underline">
+            <a
+              href="/signup"
+              className="text-green-600 font-medium hover:underline"
+            >
               Sign up
             </a>
           </p>

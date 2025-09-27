@@ -1,7 +1,14 @@
 import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const OtpPage = () => {
+
+  const backendURL = import.meta.env.VITE_BACKEND_URL;
   const [otp, setOtp] = useState(new Array(6).fill(""));
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const { email } = location.state || {};
 
   const handleChange = (element, index) => {
     if (isNaN(element.value)) return;
@@ -10,7 +17,6 @@ const OtpPage = () => {
     newOtp[index] = element.value;
     setOtp(newOtp);
 
-    // Move to next input if a digit is entered
     if (element.value && element.nextSibling) {
       element.nextSibling.focus();
     }
@@ -29,8 +35,39 @@ const OtpPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert(`Entered OTP is ${otp.join("")}`);
-    // Add verification logic here
+
+    const payload = {
+      email: email,
+      otp: otp.join(""),
+    }
+
+    // Now we need to send the request to the backend that the otp is valid is or not.
+    fetch(`${backendURL}/auth/signup/patient/otp`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify(payload)
+    })
+      .then(async response => {
+
+        const body = await response.body
+
+        if (!response.ok) {
+          throw new Error(data.message || "OTP verification failed.");
+          return;
+        }
+        // Else we need to just navigate it to the assessment page.
+        // If the assessment is already done then we don't need to show the assessment page since directly forward it to the dashboard ok.
+        // Now we need to navigate the patient to the Login Page.
+
+        console.log(body)
+        navigate("/login")
+      })
+      .catch(async error => {
+        console.error(error.message);
+        return;
+      })
   };
 
   return (
