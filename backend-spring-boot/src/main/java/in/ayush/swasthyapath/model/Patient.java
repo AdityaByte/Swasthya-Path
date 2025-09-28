@@ -7,6 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Map;
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -19,6 +22,7 @@ public class Patient {
     private String email;
     private String password;
     private String phoneNumber;
+    private byte age;
     private Gender gender;
     private float height;
     private float weight;
@@ -27,10 +31,11 @@ public class Patient {
     private ActivityLevel activityLevel;
     private float waterIntake; // In litres/per-day.
     private SleepingSchedule sleepingSchedule; // Early / Late.
+    private byte mealFrequency;
 
 
-    // Calories that do needed.
-    private double calorie;
+    // Macronutrients.
+    private Map<String, Double> macroNutrient;
 
     // BMR
     private double bmr;
@@ -41,11 +46,11 @@ public class Patient {
     // Vikruti
     private Dosha vikruti;
 
-    private Guna guna; // Quality of food: hot, cold, mild etc.
-    private Rasa rasa; // Taste
+    private String guna; // we do calculate it by the inner consitution of the patient's body.
+    private List<String> rasa; // Taste
     private Agni agni; // Digestion strength.
 
     public boolean getAssessmentDone() {
-        return this.assessmentDone;
+        return assessmentDone;
     }
 }

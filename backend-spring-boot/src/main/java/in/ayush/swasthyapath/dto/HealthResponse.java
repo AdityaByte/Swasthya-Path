@@ -12,7 +12,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class HealthResponse {
-    private DayPlan dayPlan;
+    private List<Meal> dayPlan;
     private List<String> guidelines;
-    private String pdfURL;
 }

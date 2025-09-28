@@ -9,6 +9,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DayPlan {
-    
+public class Meal {
+    private String meal;
+    private String items;
+    private double calories;
+    private String rasa;
+    private String property;
 }

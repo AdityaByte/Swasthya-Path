@@ -15,6 +15,11 @@ public class PatientRepository {
 
     private final MongoTemplate mongoTemplate;
 
+    public Patient updatePatient(Patient patient) {
+        Query query = new Query(Criteria.where("email").is(patient.getEmail()));
+        return mongoTemplate.findAndReplace(query, patient);
+    }
+
     public Patient findPatientByEmail(String email) {
         Query query = new Query();
         query.addCriteria(Criteria.where("email").is(email));

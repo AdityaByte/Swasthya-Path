@@ -1,6 +1,7 @@
 package in.ayush.swasthyapath.dto;
 
 import in.ayush.swasthyapath.enums.Dosha;
+import in.ayush.swasthyapath.model.Patient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,8 +14,6 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ResponseData {
-    private double bmr;
-    private Map<String, Double> macroNutrient;
-    private Dosha prakruti;
-    private Dosha vikruti;
+    private Patient patient;
+    private HealthResponse healthResponse;
 }

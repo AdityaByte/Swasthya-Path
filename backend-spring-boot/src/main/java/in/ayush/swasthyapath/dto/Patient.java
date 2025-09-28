@@ -1,6 +1,5 @@
 package in.ayush.swasthyapath.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import in.ayush.swasthyapath.enums.Gender;
 import lombok.AllArgsConstructor;
@@ -21,6 +20,7 @@ public class Patient {
     private String email;
     private String phoneNumber;
     private Date dob;
+    private byte age;
     private Gender gender;
     private float weight;
     private float height;

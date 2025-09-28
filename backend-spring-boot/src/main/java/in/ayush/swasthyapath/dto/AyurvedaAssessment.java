@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AyurvedaAssessment {
 
-    private BasicAssessment basicInfo;
-    private HealthAssessment healthInfo;
+    private BasicAssessment basicAssessment;
+    private HealthAssessment healthAssessment;
     private PrakrutiAssessment prakrutiAssessment;
     private VikrutiAssessment vikrutiAssessment;
 }
