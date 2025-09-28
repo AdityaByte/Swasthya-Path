@@ -1,7 +1,6 @@
 package in.ayush.swasthyapath.dto;
 
 import in.ayush.swasthyapath.enums.Dosha;
-import in.ayush.swasthyapath.model.Patient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

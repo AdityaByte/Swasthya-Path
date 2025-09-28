@@ -1,7 +1,5 @@
 package in.ayush.swasthyapath.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import in.ayush.swasthyapath.dto.AyurvedaAssessment;
 import in.ayush.swasthyapath.dto.BasicAssessment;
@@ -15,7 +13,6 @@ import in.ayush.swasthyapath.utils.FilterResponse;
 import in.ayush.swasthyapath.utils.PromptCreater;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -45,10 +42,13 @@ public class PatientAssessmentService {
             return new ResponseEntity<>(new ResponseData(), HttpStatus.UNAUTHORIZED);
         }
 
+        // We do have to map the model patient to the patient dto for data-transfer and for security concern.
+        in.ayush.swasthyapath.dto.Patient patientDTO = mapToPatientDTO(patient);
+
         if (!patient.getAssessmentDone()) {
           return new ResponseEntity<>(ResponseData.
                   builder()
-                  .patient(patient)
+                  .patient(patientDTO)
                   .healthResponse(new HealthResponse())
                   .build(), HttpStatus.OK);
         }
@@ -82,7 +82,7 @@ public class PatientAssessmentService {
         // Since do we have to return the data.
         ResponseData newResponseData = ResponseData
                 .builder()
-                .patient(patient)
+                .patient(patientDTO)
                 .healthResponse(healthResponse)
                 .build();
 
@@ -90,6 +90,20 @@ public class PatientAssessmentService {
         redisService.cacheDietPlan(email, newResponseData);
 
         return ResponseEntity.ok(newResponseData);
+    }
+
+    private in.ayush.swasthyapath.dto.Patient mapToPatientDTO(Patient patient) {
+        return in.ayush.swasthyapath.dto.Patient
+                .builder()
+                .name(patient.getName())
+                .gender(patient.getGender())
+                .age(patient.getAge())
+                .prakruti(patient.getPrakruti())
+                .vikruti(patient.getVikruti())
+                .assessmentDone(patient.getAssessmentDone())
+                .dob(patient.getDob())
+                .phoneNumber(patient.getPhoneNumber())
+                .build();
     }
 
     public ResponseEntity<?> doAyurvedaAssessment(String email, AyurvedaAssessment assessment) {

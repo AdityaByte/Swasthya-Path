@@ -1,6 +1,7 @@
 package in.ayush.swasthyapath.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import in.ayush.swasthyapath.enums.Dosha;
 import in.ayush.swasthyapath.enums.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,5 +26,7 @@ public class Patient {
     private float weight;
     private float height;
     private String password;
-
+    private Dosha prakruti;
+    private Dosha vikruti;
+    private boolean assessmentDone;
 }

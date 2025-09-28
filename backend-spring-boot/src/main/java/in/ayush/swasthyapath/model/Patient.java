@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.List;
 
@@ -22,6 +23,7 @@ public class Patient {
     private String email;
     private String password;
     private String phoneNumber;
+    private Date dob;
     private byte age;
     private Gender gender;
     private float height;

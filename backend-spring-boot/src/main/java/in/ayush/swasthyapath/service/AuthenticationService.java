@@ -87,10 +87,18 @@ public class AuthenticationService {
                 .builder()
                 .name(patient.getName())
                 .email(patient.getEmail())
+                .age(calculateAge(patient.getDob()))
                 .height(patient.getHeight())
                 .weight(patient.getWeight())
                 .gender(patient.getGender())
+                .dob(patient.getDob())
+                .phoneNumber(patient.getPhoneNumber())
                 .build();
+    }
+
+    private byte calculateAge(Date dob) {
+        Date now = new Date();
+        return (byte) (now.getYear() - dob.getYear());
     }
 
     // Login Handler Service methods.
