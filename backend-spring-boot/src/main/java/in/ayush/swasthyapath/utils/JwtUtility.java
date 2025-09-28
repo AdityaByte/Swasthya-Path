@@ -36,6 +36,15 @@ public class JwtUtility {
                 .compact();
     }
 
+    public String extractEmail(String token) throws Exception {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("email", String.class);
+    }
+
     // Details associated with the JWT token is claims.
     public Claims extractClaims(String token) throws Exception {
         return Jwts.parserBuilder()
@@ -45,9 +54,9 @@ public class JwtUtility {
                 .getBody();
     }
 
-    public boolean isTokenValid(String token, String username) throws Exception{
-        final String extractedUsername = extractClaims(token).getSubject();
-        return extractedUsername.equals(username) && !isTokenExpired(token);
+    public boolean isTokenValid(String token, String email) throws Exception{
+        final String extractedUsername = extractEmail(token);
+        return extractedUsername.equals(email) && !isTokenExpired(token);
     }
 
     public boolean isTokenExpired(String token) throws Exception {
