@@ -2,6 +2,7 @@ import React from "react";
 import Navbar from "../components/Navbar";
 import Feature from "../components/Feature";
 import Footer from "../components/Footer";
+import { Link } from "react-router-dom";
 
 const HomePage = () => {
     return (
@@ -23,11 +24,13 @@ const HomePage = () => {
                     for accurate, holistic diet care.
                 </p>
 
-                <button className="bg-gradient-to-r from-green-500 to-green-600 text-white
+                <Link to={"/login"} className="z-10">
+                    <button className="bg-gradient-to-r from-green-500 to-green-600 text-white
                            px-10 py-3 rounded-full font-semibold shadow-lg
                            hover:scale-105 hover:shadow-xl transition-all duration-300 z-10 cursor-pointer active:scale-100">
-                    Get Started
-                </button>
+                        Get Started
+                    </button>
+                </Link>
 
                 {/* Background Text */}
                 <span className="absolute bottom-0 left-1/2 -translate-x-1/2

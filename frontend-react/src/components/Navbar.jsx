@@ -65,8 +65,12 @@ const Navbar = () => {
                                 </li>
                             ))}
                             <div className="flex gap-4 mt-4">
-                                <LoginButton />
-                                <SignupButton />
+                                <Link to={"/login"}>
+                                    <LoginButton />
+                                </Link>
+                                <Link to={"/signup/"}>
+                                    <SignupButton />
+                                </Link>
                             </div>
                         </ul>
                     </div>
