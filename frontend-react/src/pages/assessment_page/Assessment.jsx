@@ -31,21 +31,32 @@ const Assessment = () => {
       digestionToday: "",
     },
     healthAssessment: {
-      healthIssues: "",
-      allergies: "",
-      preferredTastes: "",
-      guna: [],
+      healthIssues: [],
+      allergies: [],
+      preferredTastes: [],
+      agni: "",
     },
   });
 
   const [loader, setLoader] = useState(false);
 
   const updateSection = (section, name, value) => {
+
+    let parsedValue = value;
+
+    if (name === "waterInTake" || name === "hoursOfSleep") {
+      parsedValue = parseFloat(value);
+    } else if (name === "mealFrequency") {
+      parsedValue = parseInt(value);
+    } else if (name === "healthIssues" || name === "allergies" || name === "preferredTastes") {
+      parsedValue = value.split(",")
+    }
+
     setFormData((prev) => ({
       ...prev,
       [section]: {
         ...prev[section],
-        [name]: value,
+        [name]: parsedValue,
       },
     }));
   };
@@ -54,18 +65,29 @@ const Assessment = () => {
     e.preventDefault();
     setLoader(true);
 
-    const payload = { ...formData, email };
+    // Getting the token from localstorage.
+    const authToken = localStorage.getItem("token");
 
-    fetch(`${backendURL}/api/assessment`, {
+    if (!authToken) {
+      console.log("ERROR: Login first")
+      navigate("/login")
+    }
+
+    fetch(`${backendURL}/patient/assessment`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      headers: {
+        "Authorization": `Bearer ${authToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData)
     })
-      .then(async (res) => {
+      .then(async (response) => {
         setLoader(false);
-        if (!res.ok) throw new Error("Submission failed");
-        const data = await res.json();
-        navigate("/dashboard/patient", { state: data });
+        if (!response.ok) {
+          throw new Error(response.body)
+        }
+
+        navigate("/dashboard/patient");
       })
       .catch((err) => console.error(err));
   };
@@ -96,7 +118,7 @@ const Assessment = () => {
                 updateSection("basicAssessment", e.target.name, e.target.value)
               }
               type="select"
-              options={["Sedentary", "Moderate", "Active"]}
+              options={["SEDENTARY", "MODERATE", "ACTIVE"]}
             />
             <InputWithLabel
               label="Water Intake (Litres/Day)"
@@ -115,7 +137,7 @@ const Assessment = () => {
                 updateSection("basicAssessment", e.target.name, e.target.value)
               }
               type="select"
-              options={["Early", "Late"]}
+              options={["EARLY", "LATE"]}
             />
             <InputWithLabel
               label="Meal Frequency"
@@ -144,7 +166,7 @@ const Assessment = () => {
                 updateSection("basicAssessment", e.target.name, e.target.value)
               }
               type="select"
-              options={["Veg", "Non-Veg", "Mixed"]}
+              options={["VEG", "NON_VEG", "VEGAN", "MIXED"]}
             />
           </div>
         </div>
@@ -156,10 +178,10 @@ const Assessment = () => {
           </h2>
           <div className={gridClass}>
             {[
-              { label: "Body Type", name: "bodyType", options: ["Slim", "Medium", "Sturdy"] },
-              { label: "Skin Nature", name: "skinNature", options: ["Dry", "Oily", "Normal"] },
-              { label: "Digestion Strength", name: "digestionStrength", options: ["Weak", "Normal", "Strong"] },
-              { label: "Energy Pattern", name: "energyPattern", options: ["Low", "Moderate", "High"] },
+              { label: "Body Type", name: "bodyType", options: ["SLIM_LIGHT", "MEDIUM_WARM", "SOLID_STEADY"] },
+              { label: "Skin Nature", name: "skinNature", options: ["DRY_ROUGH", "WARM_OILY", "SOFT_COOL"] },
+              { label: "Digestion Strength", name: "digestionStrength", options: ["WEAK", "STRONG", "IRREGULAR"] },
+              { label: "Energy Pattern", name: "energyPattern", options: ["Quick", "High", "Steady"] },
               { label: "Sleep Nature", name: "sleepNature", options: ["Light", "Moderate", "Deep"] },
             ].map((field) => (
               <InputWithLabel
@@ -262,34 +284,16 @@ const Assessment = () => {
               type="textarea"
               placeholderText="Sweet, Salty..."
             />
-            <div className="col-span-1 md:col-span-2">
-              <label className="block mb-1 font-medium text-gray-700">GUNA</label>
-              <div className="flex gap-4">
-                {["Sattva", "Rajas", "Tamas"].map((g) => (
-                  <label key={g} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      name="guna"
-                      value={g}
-                      checked={formData.healthAssessment.guna.includes(g)}
-                      onChange={(e) => {
-                        const checked = e.target.checked;
-                        setFormData((prev) => {
-                          const newGuna = checked
-                            ? [...prev.healthAssessment.guna, g]
-                            : prev.healthAssessment.guna.filter((item) => item !== g);
-                          return {
-                            ...prev,
-                            healthAssessment: { ...prev.healthAssessment, guna: newGuna },
-                          };
-                        });
-                      }}
-                    />
-                    {g}
-                  </label>
-                ))}
-              </div>
-            </div>
+            <InputWithLabel
+              label="Digestion Strength (AGNI)"
+              name="agni"
+              value={formData.healthAssessment.agni}
+              onChange={(e) =>
+                updateSection("healthAssessment", e.target.name, e.target.value)
+              }
+              type="select"
+              options={["WEAK", "MODERATE", "STRONG", "IRREGULAR"]}
+            />
           </div>
         </div>
 

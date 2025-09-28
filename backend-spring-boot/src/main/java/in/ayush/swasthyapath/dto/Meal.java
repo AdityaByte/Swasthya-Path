@@ -10,8 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DayPlan {
-    private String breakfast;
-    private String lunch;
-    private String dinner;
-    private String snacks;
+    
 }
