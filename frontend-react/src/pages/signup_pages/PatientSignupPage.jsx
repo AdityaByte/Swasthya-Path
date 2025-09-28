@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const PatientSignupPage = () => {
 
@@ -10,6 +10,7 @@ const PatientSignupPage = () => {
         name: "",
         email: "",
         phoneNumber: "",
+        age: "",
         dob: "",
         gender: "",
         weight: "",
@@ -19,9 +20,7 @@ const PatientSignupPage = () => {
     });
 
     const handleChange = (e) => {
-
         const { name, value } = e.target
-
         setFormData({
             ...formData,
             [name]: name == "weight" || name == "height" ? parseFloat(value) : value,
@@ -112,10 +111,10 @@ const PatientSignupPage = () => {
                         </label>
                         <input
                             type="text"
-                            id="phone"
-                            name="phone"
+                            id="phoneNumber"
+                            name="phoneNumber"
                             placeholder="+91 9876543210"
-                            value={formData.phone}
+                            value={formData.phoneNumber}
                             onChange={handleChange}
                             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                             required
@@ -230,7 +229,7 @@ const PatientSignupPage = () => {
                     <div className="md:col-span-2 flex justify-center mt-4">
                         <button
                             type="submit"
-                            className="bg-green-600 text-white font-semibold px-8 py-3 rounded-lg hover:bg-green-700 transition-colors shadow-lg"
+                            className="bg-green-600 text-white font-semibold px-8 py-3 rounded-lg hover:bg-green-700 transition-colors shadow-lg cursor-pointer"
                         >
                             Sign Up
                         </button>
@@ -239,9 +238,11 @@ const PatientSignupPage = () => {
 
                 <p className="text-center text-gray-500 text-sm mt-6">
                     Already have an account?{" "}
-                    <span className="text-green-600 font-semibold cursor-pointer hover:underline">
-                        Login
-                    </span>
+                    <Link to={"/login"}>
+                        <span className="text-green-600 font-semibold cursor-pointer hover:underline">
+                            Login
+                        </span>
+                    </Link>
                 </p>
             </div>
         </div>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaCheckCircle, FaExclamationCircle, FaPrint, FaFileExport, FaShareAlt, FaSignOutAlt } from "react-icons/fa";
 import { MdOutlineFoodBank, MdOutlineAnalytics } from "react-icons/md";
+import { ClipLoader } from "react-spinners";
 
 const PatientDashboard = () => {
   const [responseData, setResponseData] = useState({
@@ -13,13 +14,7 @@ const PatientDashboard = () => {
       prakruti: "",
       vikruti: "",
       bmr: "",
-      preferredFoodGenre: "",
-      macroNutrient: {},
-      waterIntake: "",
-      mealFrequency: "",
       assessmentDone: false,
-      rasa: [],
-      agni: "",
     },
     healthResponse: {
       dayPlan: [],
@@ -30,6 +25,7 @@ const PatientDashboard = () => {
   const navigate = useNavigate();
   const backendURL = import.meta.env.VITE_BACKEND_URL;
   const authToken = localStorage.getItem("token");
+  const [loading, setLoading] = useState(true);
 
   // Token check
   useEffect(() => {
@@ -57,6 +53,8 @@ const PatientDashboard = () => {
         setResponseData(data);
       } catch (error) {
         console.error(error);
+      } finally {
+        setLoading(false); // When the task has been done.
       }
     };
 
@@ -77,6 +75,18 @@ const PatientDashboard = () => {
     localStorage.clear()
     navigate("/")
   }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[80vh] text-center">
+        <ClipLoader size={60} color="#16a34a" />
+        <p className="mt-4 text-lg font-medium text-gray-700 animate-pulse">
+          Preparing your diet plan...
+        </p>
+      </div>
+    );
+  }
+
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100 p-6">
@@ -128,13 +138,28 @@ const PatientDashboard = () => {
             <div className="mt-4 border-t pt-4 text-sm text-gray-600">
               <div className="flex justify-between">
                 <span>Assessment Done</span>
-                <span className="font-medium">{patient.assessmentDone ? "Yes" : "No"}</span>
+                <span className="font-medium">{patient?.assessmentDone ? "Yes" : "No"}</span>
               </div>
               <div className="flex justify-between mt-2">
                 <span>Assigned Diet</span>
-                <span className="font-medium">{healthResponse.dayPlan.length ? "Yes" : "No"}</span>
+                <span className="font-medium">
+                  {healthResponse?.dayPlan?.length > 0 ? "Yes" : "No"}
+                </span>
               </div>
             </div>
+
+            <div className="mt-4 border-t pt-4 text-sm text-gray-600">
+              <div className="flex justify-between">
+                <span className="font-semibold">Prakruti</span>
+                <span className="font-medium">{patient.prakruti || "Not accessible"}</span>
+              </div>
+              <div className="flex justify-between mt-2">
+                <span className="font-semibold">Vikruti</span>
+                <span className="font-medium">{patient.vikruti || "Not accessible"}</span>
+              </div>
+            </div>
+
+
           </div>
         </div>
 
