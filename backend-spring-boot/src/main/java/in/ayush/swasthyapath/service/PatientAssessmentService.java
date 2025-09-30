@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +30,8 @@ public class PatientAssessmentService {
     private final GeminiService geminiService;
     private final ObjectMapper objectMapper;
     private final RedisService redisService;
+    private final PdfService pdfService;
+    private final SupabaseService supabaseService;
 
     private static final Map<Dosha, DoshaPercent> DOSHA_MAP = Map.of(
             Dosha.VATA, new DoshaPercent(0.525, 0.225, 0.25),
@@ -53,7 +56,7 @@ public class PatientAssessmentService {
                   .build(), HttpStatus.OK);
         }
 
-        // Here we have to check the cache.
+//         Here we have to check the cache.
         ResponseData responseData = redisService.getCachedDietPlan(email);
 
         if (responseData != null) {
@@ -86,10 +89,33 @@ public class PatientAssessmentService {
                 .healthResponse(healthResponse)
                 .build();
 
+        // We do have to generate the pdf since here so this could be the async-task.
+        // Here we have to generate the file name.
+        try {
+            CompletableFuture<String> fileFuture = pdfService.generatePdfAsync(newResponseData, generateFileName(email));
+            fileFuture
+                    .thenAccept(fileAbsolutePath -> {
+                        log.info("PDF generated successfully at path, {}", fileAbsolutePath);
+                        supabaseService.saveReport(fileAbsolutePath);
+                    })
+                    .exceptionally(ex -> {
+                        log.error(ex.getMessage());
+                        return null;
+                    });
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+        }
+
+
         // Here we have to cache the response.
         redisService.cacheDietPlan(email, newResponseData);
 
         return ResponseEntity.ok(newResponseData);
+    }
+
+    private String generateFileName(String email) {
+        String fileprefix = email.split("@")[0];
+        return fileprefix + "report";
     }
 
     private in.ayush.swasthyapath.dto.Patient mapToPatientDTO(Patient patient) {
@@ -198,5 +224,11 @@ public class PatientAssessmentService {
                 "FAT", (doshaPercent.getFatPercent() * bmr) / 9
         );
     }
+
+    public ResponseEntity<?> downloadDietPlan(String email) {
+        return supabaseService.downloadReport(generateFileName(email) + ".pdf");
+    }
+
+
 
 }

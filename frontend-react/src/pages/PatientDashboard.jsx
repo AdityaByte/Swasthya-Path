@@ -71,6 +71,35 @@ const PatientDashboard = () => {
     { calories: 0 }
   );
 
+  const printDiet = () => {
+    // We do have to make a call to the backend and fetched out the signed url by which we can fetch
+    // out the report.
+    fetch(`${backendURL}/patient/report`, {
+      method: "GET",
+      headers: {
+        "Authorization": "Bearer " + authToken,
+      },
+    })
+      .then(async response => {
+        // Here we have to check the response is valid or not.
+        if (!response.ok) {
+          throw new Error(response.body);
+          return;
+        }
+
+        const jsonResponse = await response.json();
+
+        // Here we have to open teh url.
+        const downloadURL = jsonResponse.signedURL;
+
+        // Opening the url in the new window
+        window.open(downloadURL, "_blank");
+      })
+      .catch(error => {
+        console.error(error.message);
+      })
+  }
+
   const handleSignout = () => {
     localStorage.clear()
     navigate("/")
@@ -87,7 +116,6 @@ const PatientDashboard = () => {
     );
   }
 
-
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100 p-6">
       {/* header */}
@@ -99,7 +127,7 @@ const PatientDashboard = () => {
 
         {/* Quick actions buttons */}
         <div className="grid grid-cols-2 md:flex gap-2 items-center justify-center md:justify-start">
-          <button className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl shadow hover:shadow-md transition cursor-pointer">
+          <button className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl shadow hover:shadow-md transition cursor-pointer" onClick={printDiet}>
             <FaPrint className="text-green-600" />
             <span className="text-sm">Print Diet</span>
           </button>

@@ -15,9 +15,17 @@ spring:
 server:
   port: 8080
 
+# Frontend origin.
 frontend:
-  origin: http://localhost:5173
+  origin: ${FRONTEND_ORIGIN}
 
+# JWT config.
 jwt:
   secret:
     key: ${JWT_SECRET}
+
+# API Config for using the supabase s3 bucket.
+supabase:
+  api:
+    url: ${SUPABASE_URL}
+    serviceKey: ${SUPABASE_SERVICE_KEY}
