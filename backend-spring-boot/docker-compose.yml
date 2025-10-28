@@ -1,0 +1,13 @@
+version: '3.9'
+
+services:
+  backend:
+    build: .
+    container_name: swasthya-path-backend
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+    restart: unless-stopped

@@ -41,3 +41,4 @@ build/
 # Ignoring the pdf files.
 pdfs/
 pdfs/**/
+.env
