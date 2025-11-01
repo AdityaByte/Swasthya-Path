@@ -29,3 +29,11 @@ supabase:
   api:
     url: ${SUPABASE_URL}
     serviceKey: ${SUPABASE_SERVICE_KEY}
+
+perplexity:
+  ai:
+    api:
+      key: ${PERPLEXITY_API_KEY}
+      base-url: ${PERPLEXITY_BASE_URL}
+      model: sonar
+      completions-path: ${PERPLEXITY_COMPLETIONS_PATH}

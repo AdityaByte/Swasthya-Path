@@ -33,17 +33,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+
+        log.info("Working..");
+        final String authHeader = request.getHeader("Authorization");
+        final String jwt;
+        final String email;
+
+        if (authHeader == null || !authHeader.startsWith("Bearer")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
-
-            log.info("Working..");
-            final String authHeader = request.getHeader("Authorization");
-            final String jwt;
-            final String email;
-
-            if (authHeader == null || !authHeader.startsWith("Bearer")) {
-                filterChain.doFilter(request, response);
-                return;
-            }
 
             jwt = authHeader.substring(7); // Removing the Bearer.
             email = jwtUtility.extractEmail(jwt);

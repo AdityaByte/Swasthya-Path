@@ -9,6 +9,8 @@ import in.ayush.swasthyapath.enums.Dosha;
 import in.ayush.swasthyapath.model.Patient;
 import in.ayush.swasthyapath.pojo.DoshaPercent;
 import in.ayush.swasthyapath.repository.PatientRepository;
+import in.ayush.swasthyapath.service.ai.GeminiService;
+import in.ayush.swasthyapath.service.ai.PerplexityService;
 import in.ayush.swasthyapath.utils.FilterResponse;
 import in.ayush.swasthyapath.utils.PromptCreater;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.*;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +34,8 @@ public class PatientAssessmentService {
     private final RedisService redisService;
     private final PdfService pdfService;
     private final SupabaseService supabaseService;
+    private final PerplexityService perplexityService;
+    private final ExecutorService executorService;
 
     private static final Map<Dosha, DoshaPercent> DOSHA_MAP = Map.of(
             Dosha.VATA, new DoshaPercent(0.525, 0.225, 0.25),
@@ -56,7 +60,7 @@ public class PatientAssessmentService {
                   .build(), HttpStatus.OK);
         }
 
-//         Here we have to check the cache.
+        // Here we have to check the cache.
         ResponseData responseData = redisService.getCachedDietPlan(email);
 
         if (responseData != null) {
@@ -67,14 +71,38 @@ public class PatientAssessmentService {
         // Since we do get the patient data now we have to plan the diet.
         String prompt = PromptCreater.createPrompt(patient);
 
-        String geminiResponse = geminiService.generateDiet(prompt);
-        geminiResponse = FilterResponse.filter(geminiResponse);
+        // Here we need to call the ai service for generating the response.
+        // Using ExecutorService so that if anything wrong happened with one AI model then we can call another for response.
+        // We are waiting only for 10 seconds until we gets the response otherwise we are calling another service.
 
+        String aiResponse;
+
+        Callable<String> generateAIResponseTask = () -> geminiService.generateDiet(prompt);
+
+        Future<String> future = executorService.submit(generateAIResponseTask);
+
+        try {
+            // Waiting synchronously.
+            aiResponse = future.get(10, TimeUnit.SECONDS);
+        } catch (TimeoutException ex) {
+            log.info("Timeout exception, calling the perplexity service");
+            // Calling another service.
+            aiResponse = perplexityService.generateDiet(prompt);
+        } catch (ExecutionException e) {
+            log.error("Executor exception occurred, {}", e.getMessage());
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            log.error("The Thread was interrupted, {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
+
+        // Filtering the JSON response if any invalid character founds.
+        aiResponse = FilterResponse.filter(aiResponse);
 
         HealthResponse healthResponse;
 
         try {
-            healthResponse = objectMapper.readValue(geminiResponse, HealthResponse.class);
+            healthResponse = objectMapper.readValue(aiResponse, HealthResponse.class);
         } catch (Exception ex) {
             return ResponseEntity.internalServerError()
                     .body(new ResponseData());
