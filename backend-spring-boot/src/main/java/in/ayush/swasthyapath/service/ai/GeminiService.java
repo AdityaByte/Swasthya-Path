@@ -1,4 +1,4 @@
-package in.ayush.swasthyapath.service;
+package in.ayush.swasthyapath.service.ai;
 
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentResponse;
