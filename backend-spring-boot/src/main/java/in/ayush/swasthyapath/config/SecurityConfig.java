@@ -1,5 +1,6 @@
 package in.ayush.swasthyapath.config;
 
+import in.ayush.swasthyapath.enums.UserType;
 import in.ayush.swasthyapath.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,6 +43,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(req -> req
                         .requestMatchers("/api/auth/**").permitAll() // Public endpoints.
                         .requestMatchers("/api/health").permitAll() // Health request.
+                        .requestMatchers("/api/patient/**").hasRole(String.valueOf(UserType.PATIENT))
+                        .requestMatchers("/api/doctor/**").hasRole(String.valueOf(UserType.DOCTOR))
+                        .requestMatchers("/api/admin/**").hasRole(String.valueOf(UserType.ADMIN))
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

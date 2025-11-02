@@ -7,6 +7,7 @@ import in.ayush.swasthyapath.enums.UserType;
 import in.ayush.swasthyapath.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,15 +32,14 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, ?>> handleLogin(@RequestBody LoginDTO loginDTO) throws Exception {
-        if (loginDTO.getUserType() == UserType.PATIENT) {
+    public ResponseEntity<?> handleLogin(@RequestBody LoginDTO loginDTO) throws Exception {
+        Map<String, ?> result = authenticationService.handleLogin(loginDTO);
+        if (result.get("token") == null) {
             return ResponseEntity
-                    .ok(authenticationService.handlePatientLogin(loginDTO));
-        } else {
-            return ResponseEntity
-                    .badRequest()
-                    .body(Map.of("response", "Haven't implemented other functionalities"));
+                    .status(HttpStatus.FORBIDDEN)
+                    .body("Invalid credentials");
         }
+        return ResponseEntity.ok(result);
     }
 
 }

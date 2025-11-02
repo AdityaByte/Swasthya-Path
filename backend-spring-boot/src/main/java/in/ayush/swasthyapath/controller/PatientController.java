@@ -14,7 +14,7 @@ import java.security.Principal;
 @RequestMapping("/api/patient")
 @RequiredArgsConstructor
 @Slf4j
-public class MainController {
+public class PatientController {
 
     private final PatientAssessmentService patientAssessmentService;
 
@@ -31,6 +31,11 @@ public class MainController {
     @GetMapping("/report")
     public ResponseEntity<?> downloadReport(Principal principal) {
         return patientAssessmentService.downloadDietPlan(principal.getName());
+    }
+
+    @GetMapping("/test")
+    public ResponseEntity<String> hello() {
+        return ResponseEntity.ok("This route is working");
     }
 
 }

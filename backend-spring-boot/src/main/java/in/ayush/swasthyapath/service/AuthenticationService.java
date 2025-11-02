@@ -3,6 +3,7 @@ package in.ayush.swasthyapath.service;
 import in.ayush.swasthyapath.dto.LoginDTO;
 import in.ayush.swasthyapath.dto.Otp;
 import in.ayush.swasthyapath.dto.Patient;
+import in.ayush.swasthyapath.enums.UserType;
 import in.ayush.swasthyapath.exception.UserAlreadyExists;
 import in.ayush.swasthyapath.repository.PatientRepository;
 import in.ayush.swasthyapath.security.CustomUserDetails;
@@ -102,14 +103,18 @@ public class AuthenticationService {
     }
 
     // Login Handler Service methods.
-    public Map<String, ?> handlePatientLogin(LoginDTO loginDTO) throws Exception {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword()));
+    public Map<String, ?> handleLogin(LoginDTO loginDTO) throws Exception {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        concatEmailAndRole(loginDTO.getEmail(), loginDTO.getUserType()),
+                        loginDTO.getPassword())
+        );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        String token = jwtUtility.generateToken(customUserDetails.getUsername(), customUserDetails.getEmail());
+        String token = jwtUtility.generateToken(customUserDetails.getUsername(), customUserDetails.getEmail(), customUserDetails.getUserType());
         Date expiry = jwtUtility.getExpirationDate(token);
 
         boolean assessmentReport = patientRepository.findPatientAssessmentReport(loginDTO.getEmail());
@@ -119,6 +124,10 @@ public class AuthenticationService {
                 "token", token,
                 "expiry", expiry
         );
+    }
+
+    private String concatEmailAndRole(String email, UserType userType) {
+        return String.format("%s:%s", email.trim(), userType.name().trim());
     }
 
 }

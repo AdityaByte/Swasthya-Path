@@ -1,5 +1,6 @@
 package in.ayush.swasthyapath.security;
 
+import in.ayush.swasthyapath.enums.UserType;
 import in.ayush.swasthyapath.utils.JwtUtility;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -30,16 +32,18 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtility jwtUtility;
+    private final CustomUserDetailsImpl customUserDetailsImpl;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        log.info("Working..");
+        log.info("JSON Web Token is filtering..");
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String email;
+        final UserType userType;
 
-        if (authHeader == null || !authHeader.startsWith("Bearer")) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -48,10 +52,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             jwt = authHeader.substring(7); // Removing the Bearer.
             email = jwtUtility.extractEmail(jwt);
+            userType = jwtUtility.extractUserType(jwt);
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                if (jwtUtility.isTokenValid(jwt, email)) {
-                    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, null, List.of());
+
+                String combinedKey = email + ":" + userType.name();
+                CustomUserDetails userDetails = customUserDetailsImpl.loadUserByUsername(combinedKey);
+
+                if (jwtUtility.isTokenValid(jwt, email, userType)) {
+                    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                            );
 
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
