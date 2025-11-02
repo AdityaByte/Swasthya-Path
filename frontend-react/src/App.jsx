@@ -7,7 +7,7 @@ import PatientSignupPage from './pages/signup_pages/PatientSignupPage'
 import OtpPage from './pages/signup_pages/OtpPage'
 import PatientDashboard from './pages/PatientDashboard'
 import Assessment from "./pages/assessment_page/Assessment"
-import DoctorSignupPage from './pages/signup_pages/DoctorSignupPage'
+import AdminPage from './pages/AdminPage'
 
 function App() {
   return (
@@ -19,12 +19,12 @@ function App() {
           <Route path="/signup/" element={<SignupPage1 />} />
           <Route path="/signup/patient" element={<PatientSignupPage />} />
           <Route path="/signup/patient/otp" element={<OtpPage />} />
-          <Route path="/signup/doctor" element={<DoctorSignupPage />} />
         </Route>
         <Route path="/dashboard">
           <Route path="/dashboard/patient" element={<PatientDashboard />} />
         </Route>
         <Route path="/assessment" element={<Assessment />} />
+        <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </BrowserRouter>
   )
