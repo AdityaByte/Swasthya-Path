@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 
-const DoctorSignup = () => {
+const DoctorSignup = ({ authToken }) => {
+
+  const backendURL = import.meta.env.VITE_BACKEND_URL;
+  
   const [formData, setFormData] = useState({
     name: "",
     gender: "",
@@ -18,13 +21,38 @@ const DoctorSignup = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData(
+      { 
+        ...formData, 
+        [name]: name === "experienceYears ? parseFloat(value) : value
+      }
+    );
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Doctor Signup Data:", formData);
-    alert("Doctor Signup Successful!");
+
+    // Sending data to the backend Route;
+    fetch(`${backendURL}/api/admin/create/doctor`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`,
+      }, 
+      body: JSON.stringify(formData);
+    })
+    .then(async response => {
+      const body = await response.json();
+      if (!response.ok) {
+        throw new Error(`Something went wrong, ${body}`);
+        return;
+      }
+      // If the response is ok we have to Generate an alert.
+      alert("Doctor entity has been created successfully");
+    })
+    .catch(error => {
+      console.error(error.message);
+    })
   };
 
   return (
@@ -38,7 +66,7 @@ const DoctorSignup = () => {
           onSubmit={handleSubmit}
           className="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
-          {/* Basic Info */}
+          {/* Basic Details */}
           <div>
             <label className="block font-semibold mb-1">Full Name</label>
             <input
