@@ -5,7 +5,10 @@ import in.ayush.swasthyapath.dto.AyurvedaAssessment;
 import in.ayush.swasthyapath.dto.BasicAssessment;
 import in.ayush.swasthyapath.dto.HealthResponse;
 import in.ayush.swasthyapath.dto.ResponseData;
+import in.ayush.swasthyapath.enums.DoctorConsultedStatus;
 import in.ayush.swasthyapath.enums.Dosha;
+import in.ayush.swasthyapath.kafka.model.DoctorConsultedEvent;
+import in.ayush.swasthyapath.kafka.producer.DoctorConsultedEventProducer;
 import in.ayush.swasthyapath.model.Patient;
 import in.ayush.swasthyapath.pojo.DoshaPercent;
 import in.ayush.swasthyapath.repository.PatientRepository;
@@ -25,7 +28,7 @@ import java.util.concurrent.*;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class PatientAssessmentService {
+public class PatientService {
 
     private final PatientRepository patientRepository;
     private final DoshaService doshaService;
@@ -36,6 +39,7 @@ public class PatientAssessmentService {
     private final SupabaseService supabaseService;
     private final PerplexityService perplexityService;
     private final ExecutorService executorService;
+    private final DoctorConsultedEventProducer eventProducer;
 
     private static final Map<Dosha, DoshaPercent> DOSHA_MAP = Map.of(
             Dosha.VATA, new DoshaPercent(0.525, 0.225, 0.25),
@@ -44,9 +48,16 @@ public class PatientAssessmentService {
     );
 
     public ResponseEntity<ResponseData> planDiet(String email) {
+
         Patient patient = patientRepository.findPatientByEmail(email);
         if (patient == null) {
             return new ResponseEntity<>(new ResponseData(), HttpStatus.UNAUTHORIZED);
+        }
+
+        // Before all that we need to generate a kafka event for consulting the patients constitution with doctor.
+        if (patient.getDoctorConsultedStatus().equals(DoctorConsultedStatus.PENDING)) {
+            // In that case we need to generate the event.
+            eventProducer.produceEvent(mapToDoctorConsultedEvent(patient));
         }
 
         // We do have to map the model patient to the patient dto for data-transfer and for security concern.
@@ -157,6 +168,22 @@ public class PatientAssessmentService {
                 .assessmentDone(patient.getAssessmentDone())
                 .dob(patient.getDob())
                 .phoneNumber(patient.getPhoneNumber())
+                .build();
+    }
+
+    private DoctorConsultedEvent mapToDoctorConsultedEvent(Patient patient) {
+        return DoctorConsultedEvent
+                .builder()
+                .patientId(patient.getId())
+                .patientName(patient.getName())
+                .prakruti(patient.getPrakruti())
+                .vikruti(patient.getVikruti())
+                .agni(patient.getAgni())
+                .guna(patient.getGuna())
+                .rasa(patient.getRasa())
+                .activityLevel(patient.getActivityLevel())
+                .sleepingSchedule(patient.getSleepingSchedule())
+                .mealFrequency(patient.getMealFrequency())
                 .build();
     }
 

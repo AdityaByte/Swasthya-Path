@@ -24,18 +24,28 @@ public class JwtUtility {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
-    public String generateToken(String username, String email, UserType userType) {
+    public String generateToken(String id, String username, String email, UserType userType) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + EXPIRATION_TIME);
 
         return Jwts.builder()
                 .setSubject(username)
+                .claim("id", id)
                 .claim("email", email)
                 .claim("userType", userType)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public String extractId(String token) throws Exception {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("id", String.class);
     }
 
     public String extractEmail(String token) throws Exception {

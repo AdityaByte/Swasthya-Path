@@ -2,7 +2,8 @@ package in.ayush.swasthyapath.controller;
 
 import in.ayush.swasthyapath.dto.AyurvedaAssessment;
 import in.ayush.swasthyapath.dto.ResponseData;
-import in.ayush.swasthyapath.service.PatientAssessmentService;
+import in.ayush.swasthyapath.security.CustomUserDetails;
+import in.ayush.swasthyapath.service.PatientService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -16,21 +17,21 @@ import java.security.Principal;
 @Slf4j
 public class PatientController {
 
-    private final PatientAssessmentService patientAssessmentService;
+    private final PatientService patientService;
 
     @PostMapping("/assessment")
     public ResponseEntity<?> handleAyurvedaAssessmentPatient(Principal principal, @RequestBody AyurvedaAssessment ayurvedaAssessment) {
-        return patientAssessmentService.doAyurvedaAssessment(principal.getName(), ayurvedaAssessment);
+        return patientService.doAyurvedaAssessment(principal.getName(), ayurvedaAssessment);
     }
 
     @PostMapping("/diet")
     public ResponseEntity<ResponseData> handleGetDietRequest(Principal principal) {
-        return patientAssessmentService.planDiet(principal.getName());
+        return patientService.planDiet(principal.getName());
     }
 
     @GetMapping("/report")
     public ResponseEntity<?> downloadReport(Principal principal) {
-        return patientAssessmentService.downloadDietPlan(principal.getName());
+        return patientService.downloadDietPlan(principal.getName());
     }
 
     @GetMapping("/test")

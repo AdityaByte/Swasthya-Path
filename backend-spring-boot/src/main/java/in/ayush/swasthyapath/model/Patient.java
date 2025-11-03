@@ -31,6 +31,7 @@ public class Patient {
     private float height;
     private float weight;
     private boolean assessmentDone; // If true then dashboard has been shown.
+    private DoctorConsultedStatus doctorConsultedStatus = DoctorConsultedStatus.PENDING; // Could be PENDING, APPROVED.
     private FoodGenre preferredFoodGenre;
     private ActivityLevel activityLevel;
     private float waterIntake; // In litres/per-day.

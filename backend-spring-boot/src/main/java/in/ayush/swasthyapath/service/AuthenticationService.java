@@ -7,6 +7,7 @@ import in.ayush.swasthyapath.enums.UserType;
 import in.ayush.swasthyapath.exception.UserAlreadyExists;
 import in.ayush.swasthyapath.repository.PatientRepository;
 import in.ayush.swasthyapath.security.CustomUserDetails;
+import in.ayush.swasthyapath.utils.GeneralUtility;
 import in.ayush.swasthyapath.utils.JwtUtility;
 import in.ayush.swasthyapath.utils.OtpUtility;
 import lombok.RequiredArgsConstructor;
@@ -88,7 +89,7 @@ public class AuthenticationService {
                 .builder()
                 .name(patient.getName())
                 .email(patient.getEmail())
-                .age(calculateAge(patient.getDob()))
+                .age(GeneralUtility.calculateAge(patient.getDob()))
                 .height(patient.getHeight())
                 .weight(patient.getWeight())
                 .gender(patient.getGender())
@@ -97,13 +98,11 @@ public class AuthenticationService {
                 .build();
     }
 
-    private byte calculateAge(Date dob) {
-        Date now = new Date();
-        return (byte) (now.getYear() - dob.getYear());
-    }
-
     // Login Handler Service methods.
     public Map<String, ?> handleLogin(LoginDTO loginDTO) throws Exception {
+
+        Map<String, Object> responseMap = new HashMap<>();
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         concatEmailAndRole(loginDTO.getEmail(), loginDTO.getUserType()),
@@ -114,16 +113,18 @@ public class AuthenticationService {
 
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        String token = jwtUtility.generateToken(customUserDetails.getUsername(), customUserDetails.getEmail(), customUserDetails.getUserType());
+        String token = jwtUtility.generateToken(customUserDetails.getId(), customUserDetails.getUsername(), customUserDetails.getEmail(), customUserDetails.getUserType());
         Date expiry = jwtUtility.getExpirationDate(token);
 
-        boolean assessmentReport = patientRepository.findPatientAssessmentReport(loginDTO.getEmail());
+        if (loginDTO.getUserType().equals(UserType.PATIENT)) {
+            boolean assessmentReport = patientRepository.findPatientAssessmentReport(loginDTO.getEmail());
+            responseMap.put("assessment", assessmentReport);
+        }
 
-        return Map.of(
-                "assessment", assessmentReport,
-                "token", token,
-                "expiry", expiry
-        );
+        responseMap.put("token", token);
+        responseMap.put("expiry", expiry);
+
+        return responseMap;
     }
 
     private String concatEmailAndRole(String email, UserType userType) {
