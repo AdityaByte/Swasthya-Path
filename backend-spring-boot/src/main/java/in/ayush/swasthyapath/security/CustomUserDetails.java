@@ -1,6 +1,7 @@
 package in.ayush.swasthyapath.security;
 
 import in.ayush.swasthyapath.enums.UserType;
+import in.ayush.swasthyapath.model.Admin;
 import in.ayush.swasthyapath.model.Doctor;
 import in.ayush.swasthyapath.model.Patient;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,6 +13,7 @@ import java.util.List;
 
 public class CustomUserDetails implements UserDetails {
 
+    private final String id;
     private final String name;
     private final String email;
     private final String password;
@@ -19,6 +21,7 @@ public class CustomUserDetails implements UserDetails {
 
 
     public CustomUserDetails(Patient patient) {
+        this.id = patient.getId();
         this.name = patient.getName();
         this.email = patient.getEmail();
         this.password = patient.getPassword();
@@ -26,10 +29,23 @@ public class CustomUserDetails implements UserDetails {
     }
 
     public CustomUserDetails(Doctor doctor) {
+        this.id = doctor.getId();
         this.name = doctor.getName();
         this.email = doctor.getEmail();
         this.password = doctor.getPassword();
         this.userType = UserType.DOCTOR;
+    }
+
+    public CustomUserDetails(Admin admin) {
+        this.id = admin.getId();
+        this.name = admin.getName();
+        this.email = admin.getEmail();
+        this.password = admin.getPassword();
+        this.userType = UserType.ADMIN;
+    }
+
+    public String getId() {
+        return this.id;
     }
 
     public String getEmail() {
@@ -42,7 +58,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return name;
+        return email;
     }
 
     @Override
