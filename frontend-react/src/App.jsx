@@ -8,6 +8,7 @@ import OtpPage from './pages/signup_pages/OtpPage'
 import PatientDashboard from './pages/PatientDashboard'
 import Assessment from "./pages/assessment_page/Assessment"
 import AdminPage from './pages/AdminPage'
+import DoctorDashboard from './pages/DoctorDashboard'
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         </Route>
         <Route path="/dashboard">
           <Route path="/dashboard/patient" element={<PatientDashboard />} />
+          <Route path="/dashboard/doctor" element={<DoctorDashboard />} />
         </Route>
         <Route path="/assessment" element={<Assessment />} />
         <Route path="/admin" element={<AdminPage />} />

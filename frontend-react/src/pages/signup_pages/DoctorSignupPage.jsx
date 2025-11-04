@@ -56,8 +56,8 @@ const DoctorSignup = ({ authToken }) => {
   };
 
   return (
-    <div className="w-full min-h-[100vh] flex items-center justify-center bg-gradient-to-br from-green-50 via-white to-green-100 px-4">
-      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl p-10">
+    <div className="w-full min-h-[100vh] flex items-center justify-center">
+      <div className="w-full max-w-4xl bg-white rounded-2xl border-2 border-green-400 p-10">
         <h1 className="text-3xl font-bold text-center text-green-700 mb-8">
           Doctor Signup
         </h1>

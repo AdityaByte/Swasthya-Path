@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 const LoginPage = () => {
 
   const backendURL = import.meta.env.VITE_BACKEND_URL;
-  const userTypes = ["PATIENT", "DOCTOR"];
+  const userTypes = ["PATIENT", "DOCTOR", "ADMIN"];
 
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -32,23 +32,43 @@ const LoginPage = () => {
       body: JSON.stringify(formData)
     })
       .then(async response => {
-        const data = await response.json();
         if (!response.ok) {
           throw new Error(response.body);
           return;
         }
 
+        const data = await response.json();
+
+
+        // Here we have to check the userType and on the basis
+        // of that we need to swtich.
+
+        // Setting the token.
         localStorage.setItem("token", data.token);
         localStorage.setItem("tokenExpiry", data.expiry)
         // Now based on the assessment I do have to forward the page.
 
-        if (!data.assessment) {
-          navigate("/assessment");
-          return;
+        switch (formData.userType) {
+          case "PATIENT":
+            if (!data.assessment) {
+              navigate("/assessment")
+              break;
+            }
+            // If assessment has been done then we have to forward the request to the dashboard.
+            navigate("/dashboard/patient")
+            break;
+          case "DOCTOR":
+            navigate("/dashboard/doctor")
+            break;
+          case "ADMIN":
+            navigate("/admin")
+            break;
+          default:
+            console.log(formData.userType)
+            console.log("No user type found");
+            navigate("/login");
+            break;
         }
-
-        // If assessment has been done then we have to forward the request to the dashboard.
-        navigate("/dashboard/patient")
       })
 
   };
