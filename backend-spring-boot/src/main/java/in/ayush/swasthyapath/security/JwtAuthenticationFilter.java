@@ -50,7 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
 
-            jwt = authHeader.substring(7); // Removing the Bearer.
+            jwt = authHeader.substring(7);
             email = jwtUtility.extractEmail(jwt);
             userType = jwtUtility.extractUserType(jwt);
 

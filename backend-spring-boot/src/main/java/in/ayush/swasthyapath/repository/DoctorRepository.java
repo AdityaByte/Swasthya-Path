@@ -1,6 +1,7 @@
 package in.ayush.swasthyapath.repository;
 
 import in.ayush.swasthyapath.enums.UserStatus;
+import in.ayush.swasthyapath.kafka.model.DoctorConsultedEvent;
 import in.ayush.swasthyapath.model.Doctor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -50,6 +51,23 @@ public class DoctorRepository {
 
     public List<Doctor> findAllOnlineDoctors() {
         return mongoTemplate.find(new Query(Criteria.where("status").is(UserStatus.ONLINE)), Doctor.class);
+    }
+
+    public List<Doctor> findAllDoctors() {
+        return mongoTemplate.findAll(Doctor.class);
+    }
+
+    public List<DoctorConsultedEvent> findPendingPatients(String email) {
+        Query query = new Query(Criteria.where("email").is(email));
+        query.fields().include("pendingPatients").exclude("_id");
+
+        Doctor doctor = mongoTemplate.findOne(query, Doctor.class, "doctor_data");
+        return doctor != null ? doctor.getPendingPatients() : List.of();
+    }
+
+    public void saveEvent(String email, DoctorConsultedEvent event) {
+        // By using addToSet no duplicate will exists.
+        mongoTemplate.findAndModify(new Query(Criteria.where("email").is(email)), new Update().addToSet("pendingPatients", List.of(event)), Doctor.class);
     }
 
 }

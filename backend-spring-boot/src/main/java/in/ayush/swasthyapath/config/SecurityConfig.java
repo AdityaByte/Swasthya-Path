@@ -43,6 +43,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(req -> req
                         .requestMatchers("/api/auth/**").permitAll() // Public endpoints.
                         .requestMatchers("/api/health").permitAll() // Health request.
+                        .requestMatchers("/api/doctor/consult").permitAll()
                         .requestMatchers("/api/patient/**").hasRole(String.valueOf(UserType.PATIENT))
                         .requestMatchers("/api/doctor/**").hasRole(String.valueOf(UserType.DOCTOR))
                         .requestMatchers("/api/admin/**").hasRole(String.valueOf(UserType.ADMIN))

@@ -1,12 +1,15 @@
 package in.ayush.swasthyapath.service;
 
 import in.ayush.swasthyapath.kafka.model.DoctorConsultedEvent;
+import in.ayush.swasthyapath.repository.DoctorRepository;
+import in.ayush.swasthyapath.utils.JwtUtility;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -15,21 +18,32 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class DoctorService {
 
+    private final DoctorRepository doctorRepository;
+    private final JwtUtility jwtUtility;
     private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
 
-    public SseEmitter connect(String doctorId) {
-        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
-        emitters.put(doctorId, emitter);
+    public SseEmitter connect(String token) throws Exception {
 
-        emitter.onCompletion(() -> emitters.remove(doctorId));
-        emitter.onTimeout(() -> emitters.remove(doctorId));
-        emitter.onError(e -> emitters.remove(doctorId));
+        SseEmitter emitter = null;
+        String doctorEmail = jwtUtility.extractEmail(token);
+
+        if (doctorEmail == null) {
+            log.error("Invalid token");
+        } else {
+            emitter = new SseEmitter(Long.MAX_VALUE);
+            emitters.put(doctorEmail, emitter);
+        }
+
+        assert emitter != null;
+        emitter.onCompletion(() -> emitters.remove(doctorEmail));
+        emitter.onTimeout(() -> emitters.remove(doctorEmail));
+        emitter.onError(e -> emitters.remove(doctorEmail));
 
         return emitter;
     }
 
-    public void sendConsultEvent(String doctorId, DoctorConsultedEvent doctorConsultedEvent) {
-        SseEmitter emitter = emitters.get(doctorId);
+    public void sendConsultEvent(String doctorEmail, DoctorConsultedEvent doctorConsultedEvent) {
+        SseEmitter emitter = emitters.get(doctorEmail);
 
         if (emitter != null) {
             try {
@@ -39,8 +53,12 @@ public class DoctorService {
                                 .data(doctorConsultedEvent));
             } catch (IOException e) {
                 log.error("Failed to send consult event to doctor, {}", e.getMessage());
-                emitters.remove(doctorId);
+                emitters.remove(doctorEmail);
             }
         }
+    }
+
+    public List<DoctorConsultedEvent> getPendingPatients(String email) {
+        return doctorRepository.findPendingPatients(email);
     }
 }

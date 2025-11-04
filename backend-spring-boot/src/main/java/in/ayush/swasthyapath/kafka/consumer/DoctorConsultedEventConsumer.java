@@ -1,8 +1,10 @@
 package in.ayush.swasthyapath.kafka.consumer;
 
+import in.ayush.swasthyapath.enums.DoctorConsultedStatus;
 import in.ayush.swasthyapath.kafka.model.DoctorConsultedEvent;
 import in.ayush.swasthyapath.model.Doctor;
 import in.ayush.swasthyapath.repository.DoctorRepository;
+import in.ayush.swasthyapath.repository.PatientRepository;
 import in.ayush.swasthyapath.service.DoctorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,9 +18,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DoctorConsultedEventConsumer {
 
+    private List<Doctor> allDoctors;
     private List<Doctor> onlineDoctors;
     private final DoctorRepository doctorRepository;
     private final DoctorService doctorService;
+    private final PatientRepository patientRepository;
 
     @KafkaListener(topics = "${spring.kafka.topic.name}", groupId = "${spring.kafka.consumer.group-id}")
     public void consumeEvent(DoctorConsultedEvent doctorConsultedEvent) {
@@ -38,9 +42,25 @@ public class DoctorConsultedEventConsumer {
             log.info("Assigned doctor: {} to Patient ID: {}", assignedDoctor.getName(), doctorConsultedEvent.getPatientId());
 
             // Here we just need to send the event to the doctor.
-            doctorService.sendConsultEvent(assignedDoctor.getId(), doctorConsultedEvent);
+            doctorService.sendConsultEvent(assignedDoctor.getEmail(), doctorConsultedEvent);
         } else {
             log.info("No Doctor is online right now.");
+            // Saving the event to any offline doctor.
+            allDoctors = doctorRepository.findAllDoctors();
+            if (allDoctors != null) {
+                // Now we need to saving to one doctor.
+                int index = Math.abs(doctorConsultedEvent.getPatientId().hashCode()) % allDoctors.size();
+                Doctor offlineAssignedDoctor = allDoctors.get(index);
+
+                log.info("Offline Assigned doctor: {} to Patient ID: {}", offlineAssignedDoctor.getName(), doctorConsultedEvent.getPatientId());
+
+                // Now we need to save the event.
+                doctorRepository.saveEvent(offlineAssignedDoctor.getEmail(), doctorConsultedEvent);
+
+                // When it saves the event we need to update the patient consulted status too.
+                patientRepository.updatePatientConsultedStatus(doctorConsultedEvent.getPatientId(), DoctorConsultedStatus.CONSULTED_BUT_PENDING);
+                log.info("Consulted to offline doctor.");
+            }
         }
     }
 

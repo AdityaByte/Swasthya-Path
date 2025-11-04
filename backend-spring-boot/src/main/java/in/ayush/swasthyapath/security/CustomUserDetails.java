@@ -56,6 +56,10 @@ public class CustomUserDetails implements UserDetails {
         return this.userType;
     }
 
+    public String getName() {
+        return name;
+    }
+
     @Override
     public String getUsername() {
         return email;

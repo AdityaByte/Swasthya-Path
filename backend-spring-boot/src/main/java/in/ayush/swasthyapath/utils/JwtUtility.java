@@ -24,14 +24,14 @@ public class JwtUtility {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
-    public String generateToken(String id, String username, String email, UserType userType) {
+    public String generateToken(String id, String name, String email, UserType userType) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + EXPIRATION_TIME);
 
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(email)
                 .claim("id", id)
-                .claim("email", email)
+                .claim("name", name)
                 .claim("userType", userType)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
@@ -54,7 +54,7 @@ public class JwtUtility {
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
-                .get("email", String.class);
+                .getSubject();
     }
 
     // Extracting the UserType.

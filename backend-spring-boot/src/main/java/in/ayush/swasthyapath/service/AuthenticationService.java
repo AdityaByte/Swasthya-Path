@@ -113,7 +113,7 @@ public class AuthenticationService {
 
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        String token = jwtUtility.generateToken(customUserDetails.getId(), customUserDetails.getUsername(), customUserDetails.getEmail(), customUserDetails.getUserType());
+        String token = jwtUtility.generateToken(customUserDetails.getId(), customUserDetails.getName(), customUserDetails.getUsername(), customUserDetails.getUserType());
         Date expiry = jwtUtility.getExpirationDate(token);
 
         if (loginDTO.getUserType().equals(UserType.PATIENT)) {
