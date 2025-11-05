@@ -22,8 +22,7 @@ public class AuthenticationController {
 
     @PostMapping("/signup/patient")
     public ResponseEntity<String> handleSignUp(@RequestBody Patient patient) {
-        authenticationService.handlePatientSignUp(patient);
-        return ResponseEntity.ok("OTP has been sent successfully to the email.");
+        return authenticationService.handlePatientSignUp(patient);
     }
 
     @PostMapping("/signup/patient/otp")

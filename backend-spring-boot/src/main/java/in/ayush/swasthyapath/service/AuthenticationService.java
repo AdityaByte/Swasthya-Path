@@ -7,8 +7,10 @@ import in.ayush.swasthyapath.enums.UserType;
 import in.ayush.swasthyapath.exception.UserAlreadyExists;
 import in.ayush.swasthyapath.repository.PatientRepository;
 import in.ayush.swasthyapath.security.CustomUserDetails;
+import in.ayush.swasthyapath.service.mail.MailService;
 import in.ayush.swasthyapath.utils.GeneralUtility;
 import in.ayush.swasthyapath.utils.JwtUtility;
+import in.ayush.swasthyapath.utils.MailUtility;
 import in.ayush.swasthyapath.utils.OtpUtility;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -34,10 +37,14 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtility jwtUtility;
+    private final MailService mailService;
+    private final MailUtility mailUtility;
 
-    Map<String, Patient> tempStorage = new HashMap<>();
+    // Making it concurrent so that no race condition will occur and multiple threads
+    // can access it.
+    Map<String, Patient> tempStorage = new ConcurrentHashMap<>();
 
-    public void handlePatientSignUp(Patient patient) {
+    public ResponseEntity<String> handlePatientSignUp(Patient patient) {
         // Do have to check that the patient is previously existed or not.
         // A person do have only one phone-number linked with each other or email do ok.
         // Right now we are just checking for the email.
@@ -49,12 +56,26 @@ public class AuthenticationService {
 
         // If the user is null we do have to create an OTP of 6 digits and send it to the user's email.
         String otp = OtpUtility.generateOTP(patient.getEmail());
-        log.info("OTP is: {}", otp);
+
+        // Commenting the below line for production.
+        // log.info("OTP is: {}", otp);
 
         // Sending OTP logic.
+        String mailBody = mailUtility.createOTPMessage(patient.getName(), otp);
 
-        // When the otp has been sent now i need to store the user to the temporary storage.
+        // Now sending the mail.
+        if (!mailService.sendMail(patient.getEmail(), "Your Swasthya Path OTP code", mailBody)) {
+            return ResponseEntity.internalServerError()
+                    .body("Failed to send email, Try again later");
+        }
+
+        log.info("OTP Email has been successfully sent to the person email: {}", patient.getEmail());
+
+        // When the otp has been sent now I need to store the user to the temporary storage.
         tempStorage.put(patient.getEmail(), patient);
+
+        return ResponseEntity
+                .ok("OTP has been successfully sent to the person's email");
     }
 
     public ResponseEntity<String> handlePatientOTP(Otp otp) {
