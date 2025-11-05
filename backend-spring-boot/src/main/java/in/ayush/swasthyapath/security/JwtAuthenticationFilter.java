@@ -80,4 +80,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             response.getWriter().write("Unauthorized: Error processing token");
         }
     }
+
+    /**
+     * shouldNotFilter: This should not filter the request coming from the URL
+     * /api/doctor/consult
+     * @param request
+     * @return
+     * @throws ServletException
+     */
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        return path.startsWith("/api/doctor/consult");
+    }
 }

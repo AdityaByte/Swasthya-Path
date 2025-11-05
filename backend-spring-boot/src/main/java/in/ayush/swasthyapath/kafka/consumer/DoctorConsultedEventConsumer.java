@@ -42,7 +42,17 @@ public class DoctorConsultedEventConsumer {
             log.info("Assigned doctor: {} to Patient ID: {}", assignedDoctor.getName(), doctorConsultedEvent.getPatientId());
 
             // Here we just need to send the event to the doctor.
-            doctorService.sendConsultEvent(assignedDoctor.getEmail(), doctorConsultedEvent);
+            log.info("Sending the consult event to the doctor having email: {}", assignedDoctor.getEmail());
+            doctorService.sendConsultEvent(assignedDoctor.getEmail().trim(), doctorConsultedEvent);
+
+            // Along with that we need to save the consulted event too to the doctor entity.
+            doctorRepository.saveEvent(assignedDoctor.getEmail(), doctorConsultedEvent);
+            log.info("Event has been successfully saved to the doctor with name: {}", assignedDoctor.getName());
+
+            // When we do save the event we have to change the pending status to consulted but pending.
+            patientRepository.updatePatientConsultedStatus(doctorConsultedEvent.getPatientId(), DoctorConsultedStatus.CONSULTED_BUT_PENDING);
+            log.info("Successfully consulted to the doctor.");
+
         } else {
             log.info("No Doctor is online right now.");
             // Saving the event to any offline doctor.
@@ -56,6 +66,7 @@ public class DoctorConsultedEventConsumer {
 
                 // Now we need to save the event.
                 doctorRepository.saveEvent(offlineAssignedDoctor.getEmail(), doctorConsultedEvent);
+                log.info("Event has been successfully saved to the offline doctor with name: {}", offlineAssignedDoctor.getName());
 
                 // When it saves the event we need to update the patient consulted status too.
                 patientRepository.updatePatientConsultedStatus(doctorConsultedEvent.getPatientId(), DoctorConsultedStatus.CONSULTED_BUT_PENDING);

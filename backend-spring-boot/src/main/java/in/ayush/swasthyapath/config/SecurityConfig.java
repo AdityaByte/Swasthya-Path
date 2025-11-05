@@ -60,6 +60,12 @@ public class SecurityConfig {
         cors.setAllowedMethods(List.of("GET", "PUT", "POST", "DELETE", "OPTIONS"));
         cors.setAllowedHeaders(List.of("*"));
         cors.setAllowCredentials(true);
+        // For SSE.
+        cors.addExposedHeader("Content-Type");
+        cors.addExposedHeader("Cache-Control");
+        cors.addExposedHeader("Connection");
+        cors.addExposedHeader("X-Accel-Buffering");
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", cors);
         return source;

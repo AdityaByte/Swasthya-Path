@@ -67,7 +67,10 @@ public class DoctorRepository {
 
     public void saveEvent(String email, DoctorConsultedEvent event) {
         // By using addToSet no duplicate will exists.
-        mongoTemplate.findAndModify(new Query(Criteria.where("email").is(email)), new Update().addToSet("pendingPatients", List.of(event)), Doctor.class);
+        mongoTemplate.updateFirst(
+                new Query(Criteria.where("email").is(email)),
+                new Update().addToSet("pendingPatients", event),
+                Doctor.class);
     }
 
 }
