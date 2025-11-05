@@ -1,5 +1,6 @@
 package in.ayush.swasthyapath.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import in.ayush.swasthyapath.enums.UserType;
 import in.ayush.swasthyapath.utils.JwtUtility;
 import jakarta.servlet.FilterChain;
@@ -8,16 +9,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Map;
 
 /**
  * This class is an interceptor that intercepts every http request before reaching to the controller.
@@ -75,9 +76,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response);
         } catch (Exception ex) {
+            ObjectMapper objectMapper = new ObjectMapper();
             log.error("JWT filter error: {} ", ex.getMessage());
+            response.setContentType("application/json");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Unauthorized: Error processing token");
+            response.getWriter().write(objectMapper.writeValueAsString(Map.of("response", "Unauthorized: Error Processing Token")));
         }
     }
 

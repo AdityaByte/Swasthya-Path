@@ -4,6 +4,7 @@ import { FaClock, FaUserPlus, FaSignOutAlt } from "react-icons/fa";
 import { ClipLoader } from "react-spinners";
 import { jwtDecode } from "jwt-decode";
 import DoctorConsultedCard from "../components/DoctorConsultedCard";
+import { toast } from "react-toastify";
 
 const DoctorDashboard = () => {
 
@@ -73,6 +74,7 @@ const DoctorDashboard = () => {
         })
 
         eventSource.addEventListener("consult", (event) => {
+            toast.info("New Patient Consult event arrived")
             const data = JSON.parse(event.data);
             console.log("Consult event recieved: ", data)
             setLatestArrivals((prev) => [data, ...prev].slice(0, 5));
@@ -96,16 +98,19 @@ const DoctorDashboard = () => {
                 method: "POST",
             });
 
+            const data = await response.json();
+
             if (!response.ok) {
-                throw new Error("Failed to logout");
+                throw new Error(data.response);
             }
 
-            console.log("Logout successfull");
+            toast.success(data.response)
             localStorage.clear();
             navigate("/");
 
         } catch (error) {
             console.error("Error during logout:", error)
+            toast.error(error.message)
             localStorage.clear();
             navigate("/");
         }

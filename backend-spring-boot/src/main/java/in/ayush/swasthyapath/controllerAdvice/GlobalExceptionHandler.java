@@ -5,14 +5,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.Map;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserAlreadyExists.class)
-    public ResponseEntity<String> handleUserAlreadyExistsException(UserAlreadyExists ex) {
+    public ResponseEntity<?> handleUserAlreadyExistsException(UserAlreadyExists e) {
         return ResponseEntity
                 .badRequest()
-                .body(ex.getMessage());
+                .body(Map.of(
+                        "response", e.getMessage()
+                ));
     }
 
 }

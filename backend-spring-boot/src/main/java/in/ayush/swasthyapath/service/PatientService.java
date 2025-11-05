@@ -191,7 +191,9 @@ public class PatientService {
         Patient patient = patientRepository.findPatientByEmail(email);
 
         if (patient == null) {
-            return new ResponseEntity<>("Unauthorized to access the resource", HttpStatus.UNAUTHORIZED);
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Unauthorized to access the resource"));
         }
 
         // Now when we find the user we need to some tasks.
@@ -211,7 +213,9 @@ public class PatientService {
         patientRepository.updatePatient(updatedPatient);
 
         // Now do we have to save the patient data.
-        return ResponseEntity.ok("Ayurveda assessment completed..");
+        return ResponseEntity.ok(
+                Map.of("response", "Ayurveda assessment completed successfully")
+        );
     }
 
     /*
@@ -283,7 +287,5 @@ public class PatientService {
     public ResponseEntity<?> downloadDietPlan(String email) {
         return supabaseService.downloadReport(generateFileName(email) + ".pdf");
     }
-
-
 
 }

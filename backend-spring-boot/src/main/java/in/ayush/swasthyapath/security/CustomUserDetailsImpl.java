@@ -50,7 +50,7 @@ public class CustomUserDetailsImpl implements UserDetailsService {
             }
             default -> {
                 log.error("No UserType found: {}", String.valueOf(userType));
-                return null;
+                throw new UsernameNotFoundException("Invalid User type"+ userType);
             }
         }
     }

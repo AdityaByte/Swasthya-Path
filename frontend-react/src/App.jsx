@@ -9,6 +9,7 @@ import PatientDashboard from './pages/PatientDashboard'
 import Assessment from "./pages/assessment_page/Assessment"
 import AdminPage from './pages/AdminPage'
 import DoctorDashboard from './pages/DoctorDashboard'
+import { ToastContainer } from 'react-toastify'
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="/assessment" element={<Assessment />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
+      <ToastContainer position='top-right' autoClose={2000} theme='light' />
     </BrowserRouter>
   )
 }

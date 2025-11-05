@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const LoginPage = () => {
 
@@ -32,16 +33,14 @@ const LoginPage = () => {
       body: JSON.stringify(formData)
     })
       .then(async response => {
-        if (!response.ok) {
-          throw new Error(response.body);
-          return;
-        }
 
         const data = await response.json();
 
+        if (!response.ok) {
+          throw new Error(data.response);
+        }
 
-        // Here we have to check the userType and on the basis
-        // of that we need to swtich.
+        toast.success("Logged In Successfully.");
 
         // Setting the token.
         localStorage.setItem("token", data.token);
@@ -69,6 +68,9 @@ const LoginPage = () => {
             navigate("/login");
             break;
         }
+      })
+      .catch(err => {
+        toast.error(err.message);
       })
 
   };

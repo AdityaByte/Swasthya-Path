@@ -17,9 +17,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -44,14 +46,18 @@ public class AuthenticationService {
     // can access it.
     Map<String, Patient> tempStorage = new ConcurrentHashMap<>();
 
-    public ResponseEntity<String> handlePatientSignUp(Patient patient) {
+    public ResponseEntity<?> handlePatientSignUp(Patient patient) {
         // Do have to check that the patient is previously existed or not.
         // A person do have only one phone-number linked with each other or email do ok.
         // Right now we are just checking for the email.
         in.ayush.swasthyapath.model.Patient fetchedPatient = patientRepository.findPatientByEmail(patient.getEmail());
 
         if (fetchedPatient != null) {
-            throw new UserAlreadyExists("User with email: " + patient.getEmail() + " is already exists.");
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of(
+                            "respose", "User Already exists, of the email, Please Login"
+                    ));
         }
 
         // If the user is null we do have to create an OTP of 6 digits and send it to the user's email.
@@ -66,7 +72,9 @@ public class AuthenticationService {
         // Now sending the mail.
         if (!mailService.sendMail(patient.getEmail(), "Your Swasthya Path OTP code", mailBody)) {
             return ResponseEntity.internalServerError()
-                    .body("Failed to send email, Try again later");
+                    .body(Map.of(
+                            "response", "Failed to send email, Try again later"
+                    ));
         }
 
         log.info("OTP Email has been successfully sent to the person email: {}", patient.getEmail());
@@ -75,24 +83,30 @@ public class AuthenticationService {
         tempStorage.put(patient.getEmail(), patient);
 
         return ResponseEntity
-                .ok("OTP has been successfully sent to the person's email");
+                .ok(Map.of(
+                        "response", "OTP has been successfully sent to the person's email"
+                ));
     }
 
-    public ResponseEntity<String> handlePatientOTP(Otp otp) {
+    public ResponseEntity<?> handlePatientOTP(Otp otp) {
         // Now we need to check that the user by the email exists or not.
         Patient storedPatient = tempStorage.get(otp.getEmail());
 
         if (storedPatient == null) {
             return ResponseEntity
                     .badRequest()
-                    .body("No user found of the email");
+                    .body(Map.of(
+                            "response", "No user found of the email"
+                    ));
         }
 
         // Now we have to check that the user's entered OTP is valid or not.
         if (!OtpUtility.isValid(otp)) {
             return ResponseEntity
                     .badRequest()
-                    .body("Invalid OTP");
+                    .body(Map.of(
+                            "response", "Invalid OTP"
+                    ));
         }
 
         // If the OTP is valid now I just need to save the patient data to database.
@@ -102,7 +116,11 @@ public class AuthenticationService {
         // Now we have to save the Patient.
         in.ayush.swasthyapath.model.Patient savedPatient = patientRepository.save(finalData);
 
-        return new ResponseEntity<>("Patient Signup successfully.", HttpStatus.CREATED);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(Map.of(
+                        "response", "User created successfully"
+                ));
     }
 
     private in.ayush.swasthyapath.model.Patient mapToModelPatient(Patient patient) {
@@ -120,32 +138,49 @@ public class AuthenticationService {
     }
 
     // Login Handler Service methods.
-    public Map<String, ?> handleLogin(LoginDTO loginDTO) throws Exception {
+    public ResponseEntity<?> handleLogin(LoginDTO loginDTO) {
+        try {
+            Map<String, Object> responseMap = new HashMap<>();
 
-        Map<String, Object> responseMap = new HashMap<>();
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            concatEmailAndRole(loginDTO.getEmail(), loginDTO.getUserType()),
+                            loginDTO.getPassword())
+            );
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        concatEmailAndRole(loginDTO.getEmail(), loginDTO.getUserType()),
-                        loginDTO.getPassword())
-        );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+            String token = jwtUtility.generateToken(customUserDetails.getId(), customUserDetails.getName(), customUserDetails.getUsername(), customUserDetails.getUserType());
+            Date expiry = jwtUtility.getExpirationDate(token);
 
-        String token = jwtUtility.generateToken(customUserDetails.getId(), customUserDetails.getName(), customUserDetails.getUsername(), customUserDetails.getUserType());
-        Date expiry = jwtUtility.getExpirationDate(token);
+            if (loginDTO.getUserType().equals(UserType.PATIENT)) {
+                boolean assessmentReport = patientRepository.findPatientAssessmentReport(loginDTO.getEmail());
+                responseMap.put("assessment", assessmentReport);
+            }
 
-        if (loginDTO.getUserType().equals(UserType.PATIENT)) {
-            boolean assessmentReport = patientRepository.findPatientAssessmentReport(loginDTO.getEmail());
-            responseMap.put("assessment", assessmentReport);
+            responseMap.put("token", token);
+            responseMap.put("expiry", expiry);
+
+            return ResponseEntity
+                    .ok(responseMap);
+        } catch (BadCredentialsException e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of("response", "Invalid credentials"));
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of("response", "User Not found!"));
+        } catch (Exception e) {
+            log.error("Something went wrong, {}", e.getMessage());
+            return ResponseEntity
+                    .internalServerError()
+                    .body(Map.of(
+                            "response", "Something went wrong, Try again later"
+                    ));
         }
-
-        responseMap.put("token", token);
-        responseMap.put("expiry", expiry);
-
-        return responseMap;
     }
 
     private String concatEmailAndRole(String email, UserType userType) {

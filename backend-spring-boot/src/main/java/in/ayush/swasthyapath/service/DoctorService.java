@@ -82,8 +82,12 @@ public class DoctorService {
 
     public ResponseEntity<?> logout(String email) {
         if (doctorRepository.updateDoctorStatus(email, UserStatus.OFFLINE) != null) {
-            return ResponseEntity.ok("Logout successfully");
+            return ResponseEntity.ok(Map.of(
+                    "response", "Logout successfully"
+            ));
         }
-        return ResponseEntity.badRequest().body("Failed to logout");
+        return ResponseEntity.badRequest().body(Map.of(
+                "response", "Failed to logout, Try again later."
+        ));
     }
 }

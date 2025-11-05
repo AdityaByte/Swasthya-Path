@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaCheckCircle, FaExclamationCircle, FaPrint, FaFileExport, FaShareAlt, FaSignOutAlt } from "react-icons/fa";
-import { MdOutlineFoodBank, MdOutlineAnalytics } from "react-icons/md";
+import { FaPrint, FaFileExport, FaShareAlt, FaSignOutAlt } from "react-icons/fa";
 import { ClipLoader } from "react-spinners";
+import { toast } from "react-toastify";
 
 const PatientDashboard = () => {
   const [responseData, setResponseData] = useState({
@@ -39,7 +39,7 @@ const PatientDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`${backendURL}/patient/diet`, {
+        const response = await fetch(`${backendURL}/patient/diet`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${authToken}`,
@@ -47,12 +47,17 @@ const PatientDashboard = () => {
           },
         });
 
-        if (!res.ok) throw new Error("Failed to fetch patient data");
+        const data = await response.json();
 
-        const data = await res.json();
+        if (!response.ok) {
+          throw new Error(data.response)
+        }
+
+        toast.info(data.response);
+
         setResponseData(data);
       } catch (error) {
-        console.error(error);
+        toast.error(error.message);
       } finally {
         setLoading(false); // When the task has been done.
       }
@@ -97,12 +102,15 @@ const PatientDashboard = () => {
       })
       .catch(error => {
         console.error(error.message);
+        toast.error(error.message)
       })
   }
 
-  const handleSignout = () => {
+  const handleLogout = () => {
+    toast.info("Log out successfully")
     localStorage.clear()
     navigate("/")
+    l
   }
 
   if (loading) {
@@ -141,7 +149,7 @@ const PatientDashboard = () => {
           </button>
           <button className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl shadow hover:shadow-md transition cursor-pointer">
             <FaSignOutAlt className="text-red-600" />
-            <span onClick={() => handleSignout()} className="text-sm text-red-600 font-medium">Log out</span>
+            <span onClick={() => handleLogout()} className="text-sm text-red-600 font-medium">Log out</span>
           </button>
 
         </div>
