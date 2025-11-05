@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaClock, FaUserPlus, FaSignOutAlt } from "react-icons/fa";
 import { ClipLoader } from "react-spinners";
@@ -6,9 +6,11 @@ import { jwtDecode } from "jwt-decode";
 import DoctorConsultedCard from "../components/DoctorConsultedCard";
 
 const DoctorDashboard = () => {
+
+    const sseConnected = useRef(false);
     const navigate = useNavigate();
-    const backendURL = import.meta.env.VITE_BACKEND_URL;
-    const authToken = localStorage.getItem("token");
+    const backendURL = useMemo(() => import.meta.env.VITE_BACKEND_URL, []);
+    const authToken = useMemo(() => localStorage.getItem("token"), []);
 
     const [loading, setLoading] = useState(true);
     const [claims, setClaims] = useState(null);
@@ -31,6 +33,7 @@ const DoctorDashboard = () => {
     }, []);
 
     // Fetch pending patients
+    // Fetching the patients once and when gets refereshed the page.
     useEffect(() => {
         const fetchPendingPatients = async () => {
             try {
@@ -40,7 +43,7 @@ const DoctorDashboard = () => {
                 if (!response.ok) throw new Error("Failed to fetch pending patients.");
                 const text = await response.text();
 
-                const data = text ? JSON.parse(text): [];
+                const data = text ? JSON.parse(text) : [];
                 setPendingPatients(data);
             } catch (err) {
                 console.error(err.message);
@@ -50,24 +53,30 @@ const DoctorDashboard = () => {
     }, [backendURL, authToken]);
 
     // SSE for real-time updates
+    // This will run only one time when the components get attached to the dom.
     useEffect(() => {
-        if (!authToken) return;
+        if (!authToken || sseConnected.current) return;
 
-        const eventSource = new EventSource(`${backendURL}/doctor/consult?token=${authToken}`);
+        // Setting the sseConnected as true if not connected.
+        sseConnected.current = true;
 
-        eventSource.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                console.log("Received SSE event:", data);
+        const eventSource = new EventSource(
+            `${backendURL}/doctor/consult?token=${authToken}`
+        );
 
-                if (data.type === "PENDING") {
-                    setLatestArrivals((prev) => [data.patient, ...prev].slice(0, 5));
-                    setPendingPatients((prev) => [...prev, data.patient]);
-                }
-            } catch (err) {
-                console.error("Error parsing SSE data:", err);
-            }
-        };
+        eventSource.onopen = () => {
+            console.log("SSE connection established.");
+        }
+
+        eventSource.addEventListener("INIT", (event) => {
+            console.log("INIT", event.data);
+        })
+
+        eventSource.addEventListener("consult", (event) => {
+            const data = JSON.parse(event.data);
+            console.log("Consult event recieved: ", data)
+            setLatestArrivals((prev) => [data, ...prev].slice(0, 5));
+        })
 
         eventSource.onerror = (error) => {
             console.error("SSE error:", error);
@@ -75,11 +84,31 @@ const DoctorDashboard = () => {
         };
 
         return () => eventSource.close();
-    }, [backendURL, authToken]);
+    }, []);
 
-    const handleSignout = () => {
-        localStorage.clear();
-        navigate("/");
+    const handleLogout = async () => {
+        try {
+            const response = await fetch(`${backendURL}/doctor/logout`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${authToken}`,
+                },
+                method: "POST",
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to logout");
+            }
+
+            console.log("Logout successfull");
+            localStorage.clear();
+            navigate("/");
+
+        } catch (error) {
+            console.error("Error during logout:", error)
+            localStorage.clear();
+            navigate("/");
+        }
     };
 
     if (loading || !claims) {
@@ -105,7 +134,7 @@ const DoctorDashboard = () => {
 
                 <button
                     className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl shadow hover:shadow-md transition cursor-pointer"
-                    onClick={handleSignout}
+                    onClick={handleLogout}
                 >
                     <FaSignOutAlt className="text-red-600" />
                     <span className="text-sm text-red-600 font-medium">Log out</span>
@@ -113,6 +142,7 @@ const DoctorDashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
                 {/* Doctor Profile */}
                 <div className="col-span-1 lg:col-span-3 space-y-6">
                     <div className="bg-white rounded-2xl shadow p-5">
@@ -144,34 +174,58 @@ const DoctorDashboard = () => {
                 {/* Latest Arrivals */}
                 <div className="col-span-1 lg:col-span-4 space-y-6">
                     <div className="bg-white rounded-2xl shadow p-5">
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center justify-between mb-4 sticky top-0 bg-white z-10">
                             <h3 className="text-lg font-semibold flex items-center gap-2">
                                 <FaUserPlus className="text-green-600" /> Latest Arrivals
                             </h3>
                         </div>
-                        {latestArrivals.length === 0 ? (
-                            <p className="text-sm text-gray-500">No new arrivals yet.</p>
+
+                        <div
+                            className="overflow-y-auto flex flex-col gap-3 pr-2 max-h-[70vh]
+                 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+                        >
+                            {latestArrivals.length === 0 ? (
+                                <p className="text-sm text-gray-500">No new arrivals yet.</p>
+                            ) : (
+                                latestArrivals.map((event) => (
+                                    <DoctorConsultedCard
+                                        key={event.patientId}
+                                        event={event}
+                                        status="pending"
+                                    />
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+
+                {/* Pending Patients */}
+                <div className="bg-white rounded-2xl shadow p-5 col-span-1 lg:col-span-5 space-y-6">
+                    <div className="flex items-center justify-between mb-4 sticky top-0 bg-white z-10">
+                        <h3 className="text-lg font-semibold flex items-center gap-2">
+                            <FaClock className="text-yellow-500" /> Pending Consultations
+                        </h3>
+                    </div>
+
+                    <div
+                        className="overflow-y-auto flex flex-col gap-3 pr-2 max-h-[70vh]
+               scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+                    >
+                        {pendingPatients.length === 0 ? (
+                            <p className="text-sm text-gray-500">No pending patients 🎉</p>
                         ) : (
-                            latestArrivals.map((event) => <DoctorConsultedCard event={event} status="pending" />)
+                            pendingPatients.map((pendingPatient) => (
+                                <DoctorConsultedCard
+                                    key={pendingPatient.patientId}
+                                    event={pendingPatient}
+                                    status="pending"
+                                />
+                            ))
                         )}
                     </div>
                 </div>
 
-                {/* Pending Patients */}
-                <div className="col-span-1 lg:col-span-5 space-y-6">
-                    <div className="bg-white rounded-2xl shadow p-5">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold flex items-center gap-2">
-                                <FaClock className="text-yellow-500" /> Pending Consultations
-                            </h3>
-                        </div>
-                        {pendingPatients.length === 0 ? (
-                            <p className="text-sm text-gray-500">No pending patients 🎉</p>
-                        ) : (
-                            pendingPatients.map((pendingPatient) => <DoctorConsultedCard event={pendingPatient} status="pending" />)
-                        )}
-                    </div>
-                </div>
             </div>
         </div>
     );
