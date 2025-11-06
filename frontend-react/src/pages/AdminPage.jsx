@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaUserMd,
@@ -9,16 +9,58 @@ import {
 } from "react-icons/fa";
 import DoctorSignup from "./signup_pages/DoctorSignupPage";
 import appIcon from "../assets/images/logo.jpg";
+import { toast } from "react-toastify";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const backendURL = useMemo(() => import.meta.env.VITE_BACKEND_URL, [])
   const authToken = localStorage.getItem("token");
   const [activeSection, setActiveSection] = useState("dashboard");
+  const [backendData, setBackendData] = useState({
+    "patients": 0,
+    "doctors": 0,
+    "pendingPatients": 0,
+  });
 
   useEffect(() => {
     if (!authToken) {
       navigate("/login");
     }
+
+    const fetchData = async () => {
+      // Since we have to fetch the patients, pending patients, and doctors data.
+      try {
+
+        const response = await fetch(`${backendURL}/admin/fetch/data`, {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`,
+          },
+          method: "GET",
+        })
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.response);
+        }
+
+        // Else we need to save the data.
+        setBackendData({
+          patients: data.patients,
+          doctors: data.doctors,
+          pendingPatients: data.pendingPatients,
+        })
+
+      } catch (error) {
+        toast.error(error.message);
+        return;
+      }
+
+    }
+
+    fetchData();
+
   }, []);
 
   const handleLogout = () => {
@@ -63,11 +105,10 @@ const AdminDashboard = () => {
               <button
                 key={item.id}
                 onClick={() => setActiveSection(item.id)}
-                className={`flex items-center gap-3 w-full text-left px-5 py-3 text-sm font-medium transition ${
-                  activeSection === item.id
-                    ? "bg-green-100 text-green-700 border-l-4 border-green-500"
-                    : "text-gray-700 hover:bg-gray-50"
-                }`}
+                className={`flex items-center gap-3 w-full text-left px-5 py-3 text-sm font-medium transition ${activeSection === item.id
+                  ? "bg-green-100 text-green-700 border-l-4 border-green-500"
+                  : "text-gray-700 hover:bg-gray-50"
+                  }`}
               >
                 <span className="text-lg">{item.icon}</span>
                 <span className="hidden md:inline">{item.label}</span>
@@ -96,22 +137,22 @@ const AdminDashboard = () => {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div className="bg-white p-5 rounded-2xl shadow">
                 <h3 className="text-gray-500 text-sm mb-2">Total Doctors</h3>
-                <p className="text-2xl font-bold text-green-600">32</p>
+                <p className="text-2xl font-bold text-green-600">{backendData.doctors}</p>
               </div>
               <div className="bg-white p-5 rounded-2xl shadow">
                 <h3 className="text-gray-500 text-sm mb-2">Total Patients</h3>
-                <p className="text-2xl font-bold text-green-600">128</p>
+                <p className="text-2xl font-bold text-green-600">{backendData.patients}</p>
               </div>
               <div className="bg-white p-5 rounded-2xl shadow">
                 <h3 className="text-gray-500 text-sm mb-2">Pending Approvals</h3>
-                <p className="text-2xl font-bold text-green-600">5</p>
+                <p className="text-2xl font-bold text-green-600">{backendData.pendingPatients}</p>
               </div>
             </div>
           </div>
         )}
 
         {activeSection === "doctors" && (
-          <div>
+          <div className="overflow-y-auto max-h-[90vh]">
             <DoctorSignup />
           </div>
         )}

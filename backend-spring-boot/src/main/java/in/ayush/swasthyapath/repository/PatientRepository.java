@@ -49,4 +49,17 @@ public class PatientRepository {
                 Patient.class);
     }
 
+    public long findHowManyPatients() {
+        return mongoTemplate.count(new Query(), Patient.class);
+    }
+
+    public long findPendingConsultedPatients() {
+        return mongoTemplate.count(
+                new Query(new Criteria().orOperator(
+                        Criteria.where("doctorConsultedStatus").is(DoctorConsultedStatus.PENDING),
+                        Criteria.where("doctorConsultedStatus").is(DoctorConsultedStatus.CONSULTED_BUT_PENDING)
+                )),
+                Patient.class);
+    }
+
 }

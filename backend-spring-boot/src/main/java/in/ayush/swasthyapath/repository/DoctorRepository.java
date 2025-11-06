@@ -73,4 +73,8 @@ public class DoctorRepository {
                 Doctor.class);
     }
 
+    public long findHowManyDoctors() {
+        return mongoTemplate.count(new Query(), Doctor.class);
+    }
+
 }
