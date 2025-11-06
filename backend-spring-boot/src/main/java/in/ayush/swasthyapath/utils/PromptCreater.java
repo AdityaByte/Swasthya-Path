@@ -10,45 +10,64 @@ public class PromptCreater {
     public static String createPrompt(Patient patient) {
 
         return """
-        You are an expert Ayurvedic diet planner. Based on the following patient details, generate a personalized daily diet plan.
+    You are an expert Ayurvedic diet planner and nutritionist.
+    Based on the following patient details, generate a **personalized daily diet plan** in strict JSON format.
 
-        Patient Information:
-        - Name: %s
-        - Age: %d
-        - Gender: %s
-        - Height: %.1f cm
-        - Weight: %.1f kg
-        - Activity level: %s
-        - Preferred food genre: %s
-        - Meal frequency: %d times/day
-        - Sleep pattern: %s
-        - Water intake: %.1f litres/day
-        - Prakriti (constitution): %s
-        - Vikruti (imbalance): %s
-        - Guna: %s
-        - Rasa (preferred tastes): %s
-        - Agni (digestion strength): %s
-        - Macro Nutrient Requirement: %s
+    Patient Information:
+    - Name: %s
+    - Age: %d
+    - Gender: %s
+    - Height: %.1f cm
+    - Weight: %.1f kg
+    - Activity level: %s
+    - Preferred food genre: %s
+    - Meal frequency: %d times/day
+    - Sleep pattern: %s
+    - Water intake: %.1f litres/day
+    - Prakriti (constitution): %s
+    - Vikruti (imbalance): %s
+    - Guna: %s
+    - Rasa (preferred tastes): %s
+    - Agni (digestion strength): %s
+    - Macro Nutrient Requirement: %s
 
-        Instructions:
-        1. Use Ayurvedic principles of prakriti, vikruti, dosha, guna, rasa, and agni balancing.
-        2. Suggest meals according to meal frequency (breakfast, lunch, dinner, snacks if applicable).
-        3. Exclude foods that conflict with the preferred food genre.
-        4. Keep meals simple, practical, and aligned with Indian dietary context.
-        5. Output MUST be strictly in JSON format compatible with the HealthResponse DTO:
+    STRICT INSTRUCTIONS:
+    1. Create ONLY %d meals according to meal frequency (e.g., if 3 → breakfast, lunch, dinner).
+    2. Include meal names based on frequency (e.g., if 5 → Morning, Breakfast, Lunch, Evening, Dinner).
+    3. Respect preferred food genre:
+       - If "Veg" → strictly vegetarian items only.
+       - If "Non-Veg" → include meat, eggs, or fish.
+       - If "Mixed" → a balanced mix of veg and non-veg foods.
+    4. Ensure meals reflect Ayurvedic balance for prakriti, vikruti, guna, and rasa.
+       - Focus on the tastes mentioned in 'Rasa (preferred tastes)' (e.g., sweet, bitter, pungent).
+    5. Each meal must include:
+       - items (comma-separated list of foods)
+       - calories (approximation)
+       - rasa (dominant taste)
+       - property (Ayurvedic nature, e.g., cooling, warming, grounding)
+    6. Ensure daily plan matches the macro nutrient requirements provided.
+    7. Output MUST be strictly valid JSON matching this structure:
         {
           "dayPlan": [
-            {"meal": "Morning", "items": "...", "calories": 0.0, "rasa": "...", "property": "..."},
             {"meal": "Breakfast", "items": "...", "calories": 0.0, "rasa": "...", "property": "..."},
             {"meal": "Lunch", "items": "...", "calories": 0.0, "rasa": "...", "property": "..."},
-            {"meal": "Evening", "items": "...", "calories": 0.0, "rasa": "...", "property": "..."},
-            {"meal": "Dinner", "items": "...", "calories": 0.0, "rasa": "...", "property": "..."}
+            ...
           ],
-          "guidelines": ["..."]
+          "guidelines": [
+            "Tip 1",
+            "Tip 2",
+            ...
+          ]
         }
-        6. Do NOT add any extra fields, comments, explanations, or notes outside this JSON.
-        7. Ensure 'rasa' and 'property' are separate fields for each meal.
-        """.formatted(
+    8. Do NOT add explanations, notes, or text outside JSON.
+
+    Example Meal Frequency Mapping:
+    - 3 → Breakfast, Lunch, Dinner
+    - 4 → Morning, Lunch, Evening Snack, Dinner
+    - 5 → Morning, Breakfast, Lunch, Evening, Dinner
+    - 6 → Morning, Breakfast, Mid-morning Snack, Lunch, Evening, Dinner
+
+    """.formatted(
                 patient.getName(),
                 patient.getAge(),
                 patient.getGender(),
@@ -64,7 +83,8 @@ public class PromptCreater {
                 patient.getGuna(),
                 listToString(patient.getRasa()),
                 patient.getAgni(),
-                macroMapToString(patient.getMacroNutrient())
+                macroMapToString(patient.getMacroNutrient()),
+                patient.getMealFrequency() // for rule 1 formatting
         );
     }
 

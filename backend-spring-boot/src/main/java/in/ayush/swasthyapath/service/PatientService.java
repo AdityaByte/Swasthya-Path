@@ -163,6 +163,8 @@ public class PatientService {
                 .name(patient.getName())
                 .gender(patient.getGender())
                 .age(patient.getAge())
+                .height(patient.getHeight())
+                .weight(patient.getWeight())
                 .prakruti(patient.getPrakruti())
                 .vikruti(patient.getVikruti())
                 .assessmentDone(patient.getAssessmentDone())

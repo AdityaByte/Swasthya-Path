@@ -1,32 +1,74 @@
 package in.ayush.swasthyapath.service;
 
 import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import in.ayush.swasthyapath.dto.*;
+import in.ayush.swasthyapath.utils.BackgroundPageEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class PdfService {
 
-    private final ExecutorService executor;
+    @Autowired
+    private ExecutorService executor;
+    private final Font titleFont;
+    private final Font sectionFont;
+    private final Font normalFont;
+    private final Font boldFont;
+
+    public PdfService() {
+        try {
+            // Loading fonts.
+            InputStream fontStream = new ClassPathResource("fonts/Poppins-Regular.ttf").getInputStream();
+            InputStream mediumFontStream = new ClassPathResource("fonts/Poppins-Medium.ttf").getInputStream();
+            InputStream boldFontStream = new ClassPathResource("fonts/Poppins-Bold.ttf").getInputStream();
+
+            BaseFont baseFont = BaseFont.createFont("Poppins-Regular.ttf",
+                    BaseFont.IDENTITY_H, BaseFont.EMBEDDED, true,
+                    fontStream.readAllBytes(), null);
+
+            BaseFont baseFontMedium = BaseFont.createFont("Poppins-Medium.ttf",
+                    BaseFont.IDENTITY_H, BaseFont.EMBEDDED, true,
+                    mediumFontStream.readAllBytes(), null);
+
+            BaseFont baseFontBold = BaseFont.createFont("Poppins-Bold.ttf",
+                    BaseFont.IDENTITY_H, BaseFont.EMBEDDED, true,
+                    boldFontStream.readAllBytes(), null);
+
+            this.titleFont = new Font(baseFontBold, 18, Font.BOLD, new BaseColor(56, 142, 60));
+            this.sectionFont = new Font(baseFontMedium, 13, Font.UNDERLINE, BaseColor.BLACK);
+            this.normalFont = new Font(baseFont, 11, Font.NORMAL, new BaseColor(66, 66, 66));
+            this.boldFont = new Font(baseFontBold, 12, Font.BOLD, new BaseColor(33, 33, 33));
+
+        } catch(Exception e) {
+            throw new RuntimeException("Failed to load custom fonts", e);
+        }
+    }
 
     // generatePdfAsync returns a filepath.
     public CompletableFuture<String> generatePdfAsync(ResponseData responseData, String filename) throws IOException, DocumentException {
         return CompletableFuture.supplyAsync(() -> {
             try {
+
+                log.info("Generating PDF for patient: {}", responseData.getPatient().getName());
+
                 Patient patientData = responseData.getPatient();
                 HealthResponse healthResponse = responseData.getHealthResponse();
 
@@ -39,15 +81,11 @@ public class PdfService {
                 File file = new File("pdfs", filename + ".pdf");
 
                 Document document = new Document();
-                PdfWriter.getInstance(document, new FileOutputStream(file));
+                PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(file));
+                writer.setPageEvent(new BackgroundPageEvent());
 
                 document.open();
 
-                // Defining the fonts.
-                Font titleFont = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD, BaseColor.BLUE);
-                Font sectionFont = new Font(Font.FontFamily.HELVETICA, 13, Font.UNDERLINE, BaseColor.BLACK);
-                Font normalFont = new Font(Font.FontFamily.TIMES_ROMAN, 12, Font.NORMAL);
-                Font boldFont = new Font(Font.FontFamily.TIMES_ROMAN, 12, Font.BOLD);
 
                 // Patient Information.
                 Paragraph patientInformationTitle = new Paragraph("Patient Information", titleFont);
@@ -61,13 +99,13 @@ public class PdfService {
                 table.setSpacingAfter(10f);
                 table.setWidths(new float[]{1f, 2f});
 
-                addTableRow(table, "Name", patientData.getName(), boldFont, normalFont);
-                addTableRow(table, "Age", String.valueOf(patientData.getAge()), boldFont, normalFont);
-                addTableRow(table, "Gender", String.valueOf(patientData.getGender()), boldFont, normalFont);
-                addTableRow(table, "Height", patientData.getHeight() + " cm", boldFont, normalFont);
-                addTableRow(table, "Weight", patientData.getWeight() + " kg", boldFont, normalFont);
-                addTableRow(table, "Prakruti", String.valueOf(patientData.getPrakruti()), boldFont, normalFont);
-                addTableRow(table, "Vikruti", String.valueOf(patientData.getVikruti()), boldFont, normalFont);
+                addTableRow(table, "Name", patientData.getName(), sectionFont, normalFont);
+                addTableRow(table, "Age", String.valueOf(patientData.getAge()), sectionFont, normalFont);
+                addTableRow(table, "Gender", String.valueOf(patientData.getGender()), sectionFont, normalFont);
+                addTableRow(table, "Height", String.format("%.1fcm", patientData.getHeight()), sectionFont, normalFont);
+                addTableRow(table, "Weight", String.format("%.2fkg", patientData.getWeight()), sectionFont, normalFont);
+                addTableRow(table, "Prakruti", String.valueOf(patientData.getPrakruti()), sectionFont, normalFont);
+                addTableRow(table, "Vikruti", String.valueOf(patientData.getVikruti()), sectionFont, normalFont);
                 document.add(table);
                 document.add(new Paragraph("\n"));
 
@@ -93,6 +131,8 @@ public class PdfService {
                 }
 
                 document.close();
+
+                log.info("PDF successfully created at: {}", file.getAbsolutePath());
 
                 return file.getAbsolutePath();
             } catch (Exception ex) {
