@@ -3,7 +3,7 @@ package in.ayush.swasthyapath.model;
 import in.ayush.swasthyapath.enums.Dosha;
 import in.ayush.swasthyapath.enums.Gender;
 import in.ayush.swasthyapath.enums.UserStatus;
-import in.ayush.swasthyapath.kafka.model.DoctorConsultedEvent;
+import in.ayush.swasthyapath.event.model.DoctorConsultedEvent;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

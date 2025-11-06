@@ -7,8 +7,8 @@ import in.ayush.swasthyapath.dto.HealthResponse;
 import in.ayush.swasthyapath.dto.ResponseData;
 import in.ayush.swasthyapath.enums.DoctorConsultedStatus;
 import in.ayush.swasthyapath.enums.Dosha;
-import in.ayush.swasthyapath.kafka.model.DoctorConsultedEvent;
-import in.ayush.swasthyapath.kafka.producer.DoctorConsultedEventProducer;
+import in.ayush.swasthyapath.event.model.DoctorConsultedEvent;
+import in.ayush.swasthyapath.event.producer.EventProducer;
 import in.ayush.swasthyapath.model.Patient;
 import in.ayush.swasthyapath.pojo.DoshaPercent;
 import in.ayush.swasthyapath.repository.PatientRepository;
@@ -39,7 +39,7 @@ public class PatientService {
     private final SupabaseService supabaseService;
     private final PerplexityService perplexityService;
     private final ExecutorService executorService;
-    private final DoctorConsultedEventProducer eventProducer;
+    private final EventProducer eventProducer;
 
     private static final Map<Dosha, DoshaPercent> DOSHA_MAP = Map.of(
             Dosha.VATA, new DoshaPercent(0.525, 0.225, 0.25),

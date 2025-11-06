@@ -1,10 +1,11 @@
-package in.ayush.swasthyapath.kafka.model;
+package in.ayush.swasthyapath.event.model;
 
 import in.ayush.swasthyapath.enums.ActivityLevel;
 import in.ayush.swasthyapath.enums.Agni;
 import in.ayush.swasthyapath.enums.Dosha;
 import in.ayush.swasthyapath.enums.SleepingSchedule;
 import lombok.*;
+import org.springframework.context.annotation.Profile;
 
 import java.util.List;
 
@@ -13,6 +14,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Profile("kafka")
 public class DoctorConsultedEvent {
     private String patientId;
     private String patientName;

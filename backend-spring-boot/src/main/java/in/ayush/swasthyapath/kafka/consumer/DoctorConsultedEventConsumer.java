@@ -1,13 +1,15 @@
 package in.ayush.swasthyapath.kafka.consumer;
 
 import in.ayush.swasthyapath.enums.DoctorConsultedStatus;
-import in.ayush.swasthyapath.kafka.model.DoctorConsultedEvent;
+import in.ayush.swasthyapath.event.consumer.EventConsumer;
+import in.ayush.swasthyapath.event.model.DoctorConsultedEvent;
 import in.ayush.swasthyapath.model.Doctor;
 import in.ayush.swasthyapath.repository.DoctorRepository;
 import in.ayush.swasthyapath.repository.PatientRepository;
 import in.ayush.swasthyapath.service.DoctorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +18,8 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class DoctorConsultedEventConsumer {
+@Profile("kafka")
+public class DoctorConsultedEventConsumer implements EventConsumer {
 
     private List<Doctor> allDoctors;
     private List<Doctor> onlineDoctors;
@@ -24,6 +27,7 @@ public class DoctorConsultedEventConsumer {
     private final DoctorService doctorService;
     private final PatientRepository patientRepository;
 
+    @Override
     @KafkaListener(topics = "${spring.kafka.topic.name}", groupId = "${spring.kafka.consumer.group-id}")
     public void consumeEvent(DoctorConsultedEvent doctorConsultedEvent) {
         // Here we consumed the event.

@@ -1,0 +1,11 @@
+spring:
+  config:
+    activate:
+      on-profile: rabbit
+
+  # Rabbit MQ configuration.
+  rabbitmq:
+    addresses: ${RABBITMQ_URI}
+    queue-name: doctor_consulted_queue
+    exchange-name: doctor_consulted_exchange
+    routing-key: doctor.consulted

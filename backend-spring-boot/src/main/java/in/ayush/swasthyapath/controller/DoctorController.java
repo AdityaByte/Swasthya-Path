@@ -1,17 +1,14 @@
 package in.ayush.swasthyapath.controller;
 
-import in.ayush.swasthyapath.kafka.model.DoctorConsultedEvent;
-import in.ayush.swasthyapath.security.CustomUserDetails;
+import in.ayush.swasthyapath.event.model.DoctorConsultedEvent;
 import in.ayush.swasthyapath.service.DoctorService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.List;

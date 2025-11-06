@@ -1,7 +1,7 @@
 package in.ayush.swasthyapath.service;
 
 import in.ayush.swasthyapath.enums.UserStatus;
-import in.ayush.swasthyapath.kafka.model.DoctorConsultedEvent;
+import in.ayush.swasthyapath.event.model.DoctorConsultedEvent;
 import in.ayush.swasthyapath.repository.DoctorRepository;
 import in.ayush.swasthyapath.utils.JwtUtility;
 import lombok.RequiredArgsConstructor;

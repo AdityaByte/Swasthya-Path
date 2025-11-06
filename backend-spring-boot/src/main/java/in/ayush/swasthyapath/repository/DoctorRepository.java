@@ -1,7 +1,7 @@
 package in.ayush.swasthyapath.repository;
 
 import in.ayush.swasthyapath.enums.UserStatus;
-import in.ayush.swasthyapath.kafka.model.DoctorConsultedEvent;
+import in.ayush.swasthyapath.event.model.DoctorConsultedEvent;
 import in.ayush.swasthyapath.model.Doctor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -11,7 +11,6 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
-import javax.print.Doc;
 import java.util.List;
 import java.util.Optional;
 
