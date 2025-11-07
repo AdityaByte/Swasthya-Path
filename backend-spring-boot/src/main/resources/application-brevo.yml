@@ -1,0 +1,10 @@
+spring:
+  config:
+    activate:
+      on-profile: brevo
+
+brevo:
+  email: ${BREVO_EMAIL}
+  url: ${BREVO_URL}
+  api:
+    key: ${BREVO_API_KEY}

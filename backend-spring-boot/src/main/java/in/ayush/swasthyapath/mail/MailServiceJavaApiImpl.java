@@ -1,9 +1,9 @@
-package in.ayush.swasthyapath.service.mail;
+package in.ayush.swasthyapath.mail;
 
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.context.annotation.Profile;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -11,10 +11,12 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class MailService {
+@Profile("mailapi")
+public class MailServiceJavaApiImpl implements MailService {
 
     private final JavaMailSender javaMailSender;
 
+    @Override
     public boolean sendMail(String to, String subject, String text) {
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
