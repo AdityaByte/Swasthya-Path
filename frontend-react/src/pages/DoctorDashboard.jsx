@@ -16,7 +16,16 @@ const DoctorDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [claims, setClaims] = useState(null);
     const [pendingPatients, setPendingPatients] = useState([]);
-    const [latestArrivals, setLatestArrivals] = useState([]);
+    // Setting the latest arrival in session storage so that
+    //
+    const [latestArrivals, setLatestArrivals] = useState(() => {
+        const storedArrival = sessionStorage.getItem("latestArrivals");
+        return storedArrival ? JSON.parse(storedArrival) : [];
+    });
+
+    useEffect(() => {
+        sessionStorage.getItem("latestArrivals", JSON.stringify(latestArrivals));
+    }, [latestArrivals])
 
     useEffect(() => {
         if (!authToken) {
@@ -77,7 +86,10 @@ const DoctorDashboard = () => {
             toast.info("New Patient Consult event arrived")
             const data = JSON.parse(event.data);
             console.log("Consult event recieved: ", data)
-            setLatestArrivals((prev) => [data, ...prev].slice(0, 5));
+            setLatestArrivals((prev) => {
+                const updated = [data, ...prev.filter(p => p.patientId !== data.patientId)];
+                return updated.slice(0, 5);
+            });
         })
 
         eventSource.onerror = (error) => {
