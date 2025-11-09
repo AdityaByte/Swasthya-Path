@@ -170,6 +170,7 @@ public class PatientService {
                 .assessmentDone(patient.getAssessmentDone())
                 .dob(patient.getDob())
                 .phoneNumber(patient.getPhoneNumber())
+                .consultedStatus(patient.getDoctorConsultedStatus())
                 .build();
     }
 
@@ -178,14 +179,6 @@ public class PatientService {
                 .builder()
                 .patientId(patient.getId())
                 .patientName(patient.getName())
-                .prakruti(patient.getPrakruti())
-                .vikruti(patient.getVikruti())
-                .agni(patient.getAgni())
-                .guna(patient.getGuna())
-                .rasa(patient.getRasa())
-                .activityLevel(patient.getActivityLevel())
-                .sleepingSchedule(patient.getSleepingSchedule())
-                .mealFrequency(patient.getMealFrequency())
                 .build();
     }
 
@@ -240,6 +233,7 @@ public class PatientService {
         patient.setWaterIntake(assessment.getBasicAssessment().getWaterIntake());
         patient.setPreferredFoodGenre(assessment.getBasicAssessment().getPreferredFoodGenre());
         patient.setMealFrequency(assessment.getBasicAssessment().getMealFrequency());
+        patient.setAssessment(assessment); // This field is just for doctor consultation.
         return patient;
     }
 

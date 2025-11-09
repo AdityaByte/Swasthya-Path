@@ -10,6 +10,7 @@ import Assessment from "./pages/assessment_page/Assessment"
 import AdminPage from './pages/AdminPage'
 import DoctorDashboard from './pages/DoctorDashboard'
 import { ToastContainer } from 'react-toastify'
+import DoctorApprovalWindow from './pages/DoctorApprovalWindow'
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/dashboard">
           <Route path="/dashboard/patient" element={<PatientDashboard />} />
           <Route path="/dashboard/doctor" element={<DoctorDashboard />} />
+          <Route path="/dashboard/doctor/approve/:patientID" element={<DoctorApprovalWindow />} />
         </Route>
         <Route path="/assessment" element={<Assessment />} />
         <Route path="/admin" element={<AdminPage />} />

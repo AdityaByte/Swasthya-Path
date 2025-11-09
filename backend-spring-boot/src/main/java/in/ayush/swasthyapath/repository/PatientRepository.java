@@ -2,6 +2,7 @@ package in.ayush.swasthyapath.repository;
 
 // Using Criteria API because of its flexibility.
 
+import com.mongodb.client.result.UpdateResult;
 import in.ayush.swasthyapath.enums.DoctorConsultedStatus;
 import in.ayush.swasthyapath.model.Patient;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,10 @@ public class PatientRepository {
         return mongoTemplate.findAndReplace(query, patient);
     }
 
+    public Patient findPatientById(String id) {
+        return mongoTemplate.findOne(new Query(Criteria.where("id").is(id)), Patient.class);
+    }
+
     public Patient findPatientByEmail(String email) {
         Query query = new Query();
         query.addCriteria(Criteria.where("email").is(email));
@@ -41,12 +46,12 @@ public class PatientRepository {
         return patient.getAssessmentDone();
     }
 
-    public Patient updatePatientConsultedStatus(String patientId, DoctorConsultedStatus status) {
-        return mongoTemplate.findAndModify(
+    public boolean updatePatientConsultedStatus(String patientId, DoctorConsultedStatus status) {
+        UpdateResult result =  mongoTemplate.updateFirst(
                 new Query(Criteria.where("id").is(patientId)),
                 new Update().set("doctorConsultedStatus", status),
-                FindAndModifyOptions.options().returnNew(true),
                 Patient.class);
+        return result.getMatchedCount() > 0;
     }
 
     public long findHowManyPatients() {
@@ -60,6 +65,16 @@ public class PatientRepository {
                         Criteria.where("doctorConsultedStatus").is(DoctorConsultedStatus.CONSULTED_BUT_PENDING)
                 )),
                 Patient.class);
+    }
+
+    public boolean saveDoctorFeedback(String patientID, String feedback) {
+        UpdateResult result = mongoTemplate
+                .updateFirst(
+                        new Query(Criteria.where("id").is(patientID)),
+                        new Update().set("doctorFeedback", feedback),
+                        Patient.class
+                );
+        return result.getModifiedCount() > 0;
     }
 
 }

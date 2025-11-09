@@ -1,5 +1,6 @@
 package in.ayush.swasthyapath.model;
 
+import in.ayush.swasthyapath.dto.AyurvedaAssessment;
 import in.ayush.swasthyapath.enums.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -54,6 +55,13 @@ public class Patient {
     private String guna; // we do calculate it by the inner consitution of the patient's body.
     private List<String> rasa; // Taste
     private Agni agni; // Digestion strength.
+
+    // This field is mainly sent to the doctor so that it confirms
+    // that all the fields that was generated are valid or not.
+    private AyurvedaAssessment assessment;
+
+    // Field for doctor consultation.
+    private String doctorFeedback;
 
     public boolean getAssessmentDone() {
         return assessmentDone;

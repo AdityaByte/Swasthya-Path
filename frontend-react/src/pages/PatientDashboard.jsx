@@ -15,6 +15,7 @@ const PatientDashboard = () => {
       vikruti: "",
       bmr: "",
       assessmentDone: false,
+      consultedStatus: "",
     },
     healthResponse: {
       dayPlan: [],
@@ -107,7 +108,7 @@ const PatientDashboard = () => {
   }
 
   const handleLogout = () => {
-    toast.info("Log out successfully")
+    toast.success("Log out successfully")
     localStorage.clear()
     navigate("/")
     l
@@ -180,6 +181,12 @@ const PatientDashboard = () => {
                 <span>Assigned Diet</span>
                 <span className="font-medium">
                   {healthResponse?.dayPlan?.length > 0 ? "Yes" : "No"}
+                </span>
+              </div>
+              <div className="flex justify-between mt-2">
+                <span>Consulted Status</span>
+                <span className="font-medium">
+                  {patient?.consultedStatus == "APPROVED" ? "APPROVED" : "PENDING"}
                 </span>
               </div>
             </div>

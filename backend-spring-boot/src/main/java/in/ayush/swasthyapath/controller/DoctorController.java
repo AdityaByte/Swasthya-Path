@@ -1,5 +1,6 @@
 package in.ayush.swasthyapath.controller;
 
+import in.ayush.swasthyapath.dto.DoctorFeedbackRequestDTO;
 import in.ayush.swasthyapath.event.model.DoctorConsultedEvent;
 import in.ayush.swasthyapath.service.DoctorService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,6 +20,21 @@ import java.util.List;
 public class DoctorController {
 
     private final DoctorService doctorService;
+
+    @PostMapping("/feedback")
+    public ResponseEntity<?> handleDoctorFeedback(Principal principal, @RequestBody DoctorFeedbackRequestDTO doctorFeedbackRequestDTO) {
+        return doctorService.doDoctorFeedback(principal.getName(), doctorFeedbackRequestDTO);
+    }
+    
+    @GetMapping("/approve")
+    public ResponseEntity<?> handlePatientApproval(Principal principal, @RequestParam String patientID) {
+        return doctorService.approvePatient(principal.getName(), patientID);
+    }
+
+    @PostMapping("/patient")
+    public ResponseEntity<?> handlePatientConsultation(@RequestParam String patientID) {
+        return doctorService.fetchPatientConsultation(patientID);
+    }
 
     @GetMapping(
             value = "/consult",

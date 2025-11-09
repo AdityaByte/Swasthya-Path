@@ -1,5 +1,7 @@
 package in.ayush.swasthyapath.repository;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.client.result.UpdateResult;
 import in.ayush.swasthyapath.enums.UserStatus;
 import in.ayush.swasthyapath.event.model.DoctorConsultedEvent;
 import in.ayush.swasthyapath.model.Doctor;
@@ -70,6 +72,16 @@ public class DoctorRepository {
                 new Query(Criteria.where("email").is(email)),
                 new Update().addToSet("pendingPatients", event),
                 Doctor.class);
+    }
+
+    public boolean removePendingConsultedPatient(String doctorEmail, String patientID) {
+        // Here we need to remove the consultedPatient whose patientID matches.
+        Query query = new Query(Criteria.where("email").is(doctorEmail));
+        Update update = new Update().pull("pendingPatients",
+                new BasicDBObject("patientId", patientID));
+
+        UpdateResult result = mongoTemplate.updateFirst(query, update, Doctor.class);
+        return result.getModifiedCount() > 0;
     }
 
     public long findHowManyDoctors() {

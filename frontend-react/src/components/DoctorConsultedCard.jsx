@@ -1,12 +1,11 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 
 const DoctorConsultedCard = ({ event, status = "Pending" }) => {
   const navigate = useNavigate();
 
   const handleApprove = () => {
-    navigate(`/approve/${event.patientId}`);
+    navigate(`/dashboard/doctor/approve/${event.patientId}`);
   };
 
   const statusColor =
@@ -15,18 +14,16 @@ const DoctorConsultedCard = ({ event, status = "Pending" }) => {
       : "bg-yellow-100 text-yellow-700 border-yellow-300";
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-      transition={{ duration: 0.3 }}
+    <div
       className="
         bg-white/80 backdrop-blur-sm border border-gray-200
-        shadow-md hover:shadow-xl
+        shadow-md hover:shadow-lg
         rounded-2xl p-5
         transition-all duration-300
         w-full mx-auto
       "
     >
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-3">
         <h2 className="text-lg font-semibold text-gray-800 truncate">
           {event.patientName}
         </h2>
@@ -37,50 +34,11 @@ const DoctorConsultedCard = ({ event, status = "Pending" }) => {
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[13px] text-gray-700">
-        <p>
-          <strong>Patient ID:</strong> {event.patientId}
-        </p>
-        <p>
-          <strong>Prakruti:</strong> {event.prakruti}
-        </p>
-        <p>
-          <strong>Vikruti:</strong> {event.vikruti}
-        </p>
-        <p>
-          <strong>Agni:</strong> {event.agni}
-        </p>
-        <p>
-          <strong>Guna:</strong> {event.guna}
-        </p>
-        <p>
-          <strong>Activity:</strong> {event.activityLevel}
-        </p>
-        <p>
-          <strong>Sleep:</strong> {event.sleepingSchedule}
-        </p>
-        <p>
-          <strong>Meal Freq:</strong> {event.mealFrequency}
-        </p>
-      </div>
+      <p className="text-sm text-gray-600 mb-4">
+        <strong>Patient ID:</strong> {event.patientId}
+      </p>
 
-      {event.rasa?.length > 0 && (
-        <div className="mt-4">
-          <strong className="text-gray-700 text-sm">Rasa:</strong>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {event.rasa.map((r, i) => (
-              <span
-                key={i}
-                className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs border border-blue-200 shadow-sm"
-              >
-                {r}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="mt-6 text-right">
+      <div className="text-right">
         <button
           onClick={handleApprove}
           className="
@@ -95,7 +53,7 @@ const DoctorConsultedCard = ({ event, status = "Pending" }) => {
           View & Approve
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

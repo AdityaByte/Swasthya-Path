@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResponseData {
-    private Patient patient;
-    private HealthResponse healthResponse;
+public class DoctorFeedbackRequestDTO {
+    private String patientID;
+    private String feedback;
 }

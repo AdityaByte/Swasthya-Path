@@ -1,6 +1,7 @@
 package in.ayush.swasthyapath.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import in.ayush.swasthyapath.enums.DoctorConsultedStatus;
 import in.ayush.swasthyapath.enums.Dosha;
 import in.ayush.swasthyapath.enums.Gender;
 import lombok.AllArgsConstructor;
@@ -29,4 +30,5 @@ public class Patient {
     private Dosha prakruti;
     private Dosha vikruti;
     private boolean assessmentDone;
+    private DoctorConsultedStatus consultedStatus;
 }

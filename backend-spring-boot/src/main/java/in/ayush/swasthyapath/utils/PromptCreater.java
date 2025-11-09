@@ -31,6 +31,9 @@ public class PromptCreater {
     - Agni (digestion strength): %s
     - Macro Nutrient Requirement: %s
 
+    Doctor’s Consultation / Prescription:
+    %s
+
     STRICT INSTRUCTIONS:
     1. Create ONLY %d meals according to meal frequency (e.g., if 3 → breakfast, lunch, dinner).
     2. Include meal names based on frequency (e.g., if 5 → Morning, Breakfast, Lunch, Evening, Dinner).
@@ -84,6 +87,9 @@ public class PromptCreater {
                 listToString(patient.getRasa()),
                 patient.getAgni(),
                 macroMapToString(patient.getMacroNutrient()),
+                (patient.getDoctorFeedback() != null && !patient.getDoctorFeedback().isEmpty())
+                        ? patient.getDoctorFeedback()
+                        : "No doctor consultation or prescription provided yet.",
                 patient.getMealFrequency() // for rule 1 formatting
         );
     }
