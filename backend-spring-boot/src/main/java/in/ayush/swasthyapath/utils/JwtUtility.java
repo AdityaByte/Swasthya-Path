@@ -18,7 +18,11 @@ public class JwtUtility {
     @Value("${jwt.secret.key}")
     private String SECRET_KEY;
 
+    // Token is valid only for 1 hour.
     private final long EXPIRATION_TIME = 1000 * 60 * 60;
+
+    // Refresh token validity is for 7 days.
+    private final long REFRESH_EXPIRATION_TIME = 7 * 24 * 60 * 60 * 1000;
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
@@ -32,6 +36,19 @@ public class JwtUtility {
                 .setSubject(email)
                 .claim("id", id)
                 .claim("name", name)
+                .claim("userType", userType)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String generateRefreshToken(String email, UserType userType) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + REFRESH_EXPIRATION_TIME);
+
+        return Jwts.builder()
+                .setSubject(email)
                 .claim("userType", userType)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)

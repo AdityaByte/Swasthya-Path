@@ -5,6 +5,10 @@ import in.ayush.swasthyapath.dto.Otp;
 import in.ayush.swasthyapath.dto.Patient;
 import in.ayush.swasthyapath.enums.UserType;
 import in.ayush.swasthyapath.mail.MailService;
+import in.ayush.swasthyapath.model.Admin;
+import in.ayush.swasthyapath.model.Doctor;
+import in.ayush.swasthyapath.repository.AdminRepository;
+import in.ayush.swasthyapath.repository.DoctorRepository;
 import in.ayush.swasthyapath.repository.PatientRepository;
 import in.ayush.swasthyapath.security.CustomUserDetails;
 import in.ayush.swasthyapath.utils.GeneralUtility;
@@ -24,7 +28,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,6 +38,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AuthenticationService {
 
     private final PatientRepository patientRepository;
+    private final DoctorRepository doctorRepository;
+    private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtility jwtUtility;
@@ -152,15 +157,15 @@ public class AuthenticationService {
             CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
             String token = jwtUtility.generateToken(customUserDetails.getId(), customUserDetails.getName(), customUserDetails.getUsername(), customUserDetails.getUserType());
-            Date expiry = jwtUtility.getExpirationDate(token);
+            String refreshToken = jwtUtility.generateRefreshToken(customUserDetails.getEmail(), customUserDetails.getUserType());
 
             if (loginDTO.getUserType().equals(UserType.PATIENT)) {
                 boolean assessmentReport = patientRepository.findPatientAssessmentReport(loginDTO.getEmail());
                 responseMap.put("assessment", assessmentReport);
             }
 
-            responseMap.put("token", token);
-            responseMap.put("expiry", expiry);
+            responseMap.put("accessToken", token);
+            responseMap.put("refreshToken", refreshToken);
 
             return ResponseEntity
                     .ok(responseMap);
@@ -184,6 +189,97 @@ public class AuthenticationService {
 
     private String concatEmailAndRole(String email, UserType userType) {
         return String.format("%s:%s", email.trim(), userType.name().trim());
+    }
+
+    public ResponseEntity<?> refreshToken(String refreshToken) {
+        try {
+            String email = jwtUtility.extractEmail(refreshToken);
+            UserType userType = jwtUtility.extractUserType(refreshToken);
+
+            if (jwtUtility.isTokenExpired(refreshToken)) {
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of(
+                                "response", "Refresh Token expired, please log in again"
+                        ));
+            }
+
+            switch (userType) {
+                case PATIENT -> {
+
+                    in.ayush.swasthyapath.model.Patient patient = patientRepository.findPatientByEmail(email);
+                    if (patient == null) {
+                        return ResponseEntity
+                                .status(HttpStatus.UNAUTHORIZED)
+                                .body(Map.of("response", "Invalid refresh token"));
+                    }
+
+                    // Else we have to generate the token for the patient.
+                    String newAccessToken = jwtUtility.generateToken(patient.getId(), patient.getName(), patient.getEmail(), UserType.PATIENT);
+                    String newRefreshToken = jwtUtility.generateRefreshToken(patient.getEmail(), UserType.PATIENT);
+
+                    return ResponseEntity
+                            .ok(Map.of(
+                                    "accessToken", newAccessToken,
+                                    "refreshToken", newRefreshToken
+                            ));
+
+                }
+                case DOCTOR -> {
+                    Doctor doctor = doctorRepository.findDoctorByEmail(email);
+                    if (doctor == null) {
+                        return ResponseEntity
+                                .status(HttpStatus.UNAUTHORIZED)
+                                .body(Map.of("response", "Invalid refresh token"));
+                    }
+
+                    // Else we have to generate the token for the patient.
+                    String newAccessToken = jwtUtility.generateToken(doctor.getId(), doctor.getName(), doctor.getEmail(), UserType.DOCTOR);
+                    String newRefreshToken = jwtUtility.generateRefreshToken(doctor.getEmail(), UserType.DOCTOR);
+
+
+                    return ResponseEntity
+                            .ok(Map.of(
+                                    "accessToken", newAccessToken,
+                                    "refreshToken", newRefreshToken
+                            ));
+                }
+                case ADMIN -> {
+                    Admin admin = adminRepository.findAdmin(email);
+                    if (admin == null) {
+                        return ResponseEntity
+                                .status(HttpStatus.UNAUTHORIZED)
+                                .body(Map.of("response", "Invalid refresh token"));
+                    }
+
+                    // Else we have to generate the token for the patient.
+                    String newAccessToken = jwtUtility.generateToken(admin.getId(), admin.getName(), admin.getEmail(), UserType.ADMIN);
+                    String newRefreshToken = jwtUtility.generateRefreshToken(admin.getEmail(), UserType.ADMIN);
+
+                    return ResponseEntity
+                            .ok(Map.of(
+                                    "accessToken", newAccessToken,
+                                    "refreshToken", newRefreshToken
+                            ));
+                }
+                default -> {
+                    log.info("No user of type found");
+                    return ResponseEntity
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .body(Map.of(
+                                    "response", "Invalid user type found, Invalid token"
+                            ));
+                }
+            }
+
+
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of(
+                            "response", "Invalid or malformed refresh token"
+                    ));
+        }
     }
 
 }

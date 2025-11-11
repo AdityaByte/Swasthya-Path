@@ -43,8 +43,8 @@ const LoginPage = () => {
         toast.success("Logged In Successfully.");
 
         // Setting the token.
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("tokenExpiry", data.expiry)
+        localStorage.setItem("token", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken);
         // Now based on the assessment I do have to forward the page.
 
         switch (formData.userType) {

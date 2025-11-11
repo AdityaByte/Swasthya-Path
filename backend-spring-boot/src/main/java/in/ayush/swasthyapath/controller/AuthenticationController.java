@@ -5,7 +5,6 @@ import in.ayush.swasthyapath.dto.Otp;
 import in.ayush.swasthyapath.dto.Patient;
 import in.ayush.swasthyapath.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +30,11 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<?> handleLogin(@RequestBody LoginDTO loginDTO) throws Exception {
         return authenticationService.handleLogin(loginDTO);
+    }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<?> handleTokenRefreshment(@RequestBody Map<String, String> request) {
+        return authenticationService.refreshToken(request.get("refreshToken"));
     }
 
 }
