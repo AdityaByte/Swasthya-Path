@@ -282,4 +282,21 @@ public class AuthenticationService {
         }
     }
 
+    public ResponseEntity<?> tokenValidation(String token) {
+        try {
+            if(jwtUtility.isTokenExpired(token)) {
+                return ResponseEntity
+                        .badRequest()
+                        .body(Map.of(
+                                "response", "Token expired"
+                        ));
+            }
+            return ResponseEntity
+                    .ok(Map.of("response", "Token is valid"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("response", "Invalid token"));
+        }
+    }
+
 }

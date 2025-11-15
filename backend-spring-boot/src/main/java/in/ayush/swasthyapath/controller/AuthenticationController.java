@@ -37,4 +37,9 @@ public class AuthenticationController {
         return authenticationService.refreshToken(request.get("refreshToken"));
     }
 
+    @PostMapping("/token")
+    public ResponseEntity<?> handleTokenValidation(@RequestBody Map<String, String> request) {
+        return authenticationService.tokenValidation(request.get("access_token"));
+    }
+
 }

@@ -161,6 +161,7 @@ public class PatientService {
         return in.ayush.swasthyapath.dto.Patient
                 .builder()
                 .name(patient.getName())
+                .email(patient.getEmail())
                 .gender(patient.getGender())
                 .age(patient.getAge())
                 .height(patient.getHeight())
