@@ -13,6 +13,7 @@ import in.ayush.swasthyapath.model.Patient;
 import in.ayush.swasthyapath.pojo.DoshaPercent;
 import in.ayush.swasthyapath.repository.PatientRepository;
 import in.ayush.swasthyapath.service.ai.GeminiService;
+import in.ayush.swasthyapath.service.ai.GroqService;
 import in.ayush.swasthyapath.service.ai.PerplexityService;
 import in.ayush.swasthyapath.utils.FilterResponse;
 import in.ayush.swasthyapath.utils.PromptCreater;
@@ -40,6 +41,7 @@ public class PatientService {
     private final PerplexityService perplexityService;
     private final ExecutorService executorService;
     private final EventProducer eventProducer;
+    private final GroqService groqService;
 
     private static final Map<Dosha, DoshaPercent> DOSHA_MAP = Map.of(
             Dosha.VATA, new DoshaPercent(0.525, 0.225, 0.25),
@@ -88,7 +90,8 @@ public class PatientService {
 
         String aiResponse;
 
-        Callable<String> generateAIResponseTask = () -> geminiService.generateDiet(prompt);
+//        Callable<String> generateAIResponseTask = () -> geminiService.generateDiet(prompt);
+        Callable<String> generateAIResponseTask = () -> groqService.generateDiet(prompt); // Calling the groq service for better response.
 
         Future<String> future = executorService.submit(generateAIResponseTask);
 
@@ -98,7 +101,7 @@ public class PatientService {
         } catch (TimeoutException ex) {
             log.info("Timeout exception, calling the perplexity service");
             // Calling another service.
-            aiResponse = perplexityService.generateDiet(prompt);
+            aiResponse = geminiService.generateDiet(prompt);
         } catch (ExecutionException e) {
             log.error("Executor exception occurred, {}", e.getMessage());
             throw new RuntimeException(e);
@@ -189,13 +192,18 @@ public class PatientService {
         if (patient == null) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("message", "Unauthorized to access the resource"));
+                    .body(Map.of("response", "Unauthorized to access the resource"));
         }
 
         // Now when we find the user we need to some tasks.
 
         // Calculating the bmr of the user.
         final double bmr = calculateBMR(patient, assessment.getBasicAssessment());
+
+        // Note: The two comments mentioned below are just over-shadowed by simplicity Rule based logic is good instead of these complexity.
+        // Since in the previous version we are calculating the prakruti and vikruti of the person via rule based scenerio.
+        // Here we call an ml service which predicts the prakruti, vikruti, dosh and gun of the patients and gives us the output.
+
 
         Dosha prakruti = doshaService.calculatePrakruti(assessment.getPrakrutiAssessment());
         Dosha vikruti = doshaService.calculateVikruti(assessment.getVikrutiAssessment());

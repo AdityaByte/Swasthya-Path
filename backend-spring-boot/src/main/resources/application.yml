@@ -42,3 +42,9 @@ perplexity:
       base-url: ${PERPLEXITY_BASE_URL}
       model: sonar
       completions-path: ${PERPLEXITY_COMPLETIONS_PATH}
+
+groq:
+  url: ${GROQ_URL}
+  model: ${GROQ_MODEL_NAME}
+  api:
+    key: ${GROQ_API_KEY}
